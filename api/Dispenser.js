@@ -14,6 +14,11 @@ router.post("/addDispenser", (req, res) => {
     invNumber = invNumber.trim();
     model = model.toLowerCase();
     model = model.trim();
+    location.region = location.region.toLowerCase();
+    location.region = location.region.trim();
+    location.city = location.city.toLowerCase();
+    location.city = location.city.trim();
+    location.address = location.address.toLowerCase();
 
     //days to sanitation
     const now = new Date;
@@ -23,29 +28,44 @@ router.post("/addDispenser", (req, res) => {
     const roundDp = Math.round(daysPassed);
     const calcDaysToSanitation = 35 - roundDp;
 
-
-    newDispenser = new Dispenser({
-        warehouse,
-        invNumber,
-        model,
-        location,
-        dateOfLastSanitation,
-        comment,
-        dts: calcDaysToSanitation
-    })
-
-    newDispenser.save().then(result => {
-        res.json({
-            status: "SUCCESS",
-            message: "Dispenser added",
-            data: result,
-        })
-    
-    })
-    .catch(err => {
+    //checking if dispenser already exist
+    Dispenser.find({invNumber}).then(result =>{
+        if (result.length) {
+            res.json({
+                status: "FAILED",
+                message: "Točionik s unsenim inventurnim brojem već postoji!"
+            })
+        }
+        else {
+            newDispenser = new Dispenser({
+                warehouse,
+                invNumber,
+                model,
+                location,
+                dateOfLastSanitation,
+                comment,
+                dts: calcDaysToSanitation
+            })
+        
+            newDispenser.save().then(result => {
+                res.json({
+                    status: "SUCCESS",
+                    message: "Točionik dodan",
+                    data: result,
+                })
+            
+            })
+            .catch(err => {
+                res.json({
+                    status: "FAILED",
+                    message: "An error occurred while saving dispenser!"
+                })
+            })
+        }
+    }). catch(err => {
         res.json({
             status: "FAILED",
-            message: "An error occurred while saving user account"
+            message: "An error occured while trying to find dispenser! "
         })
     })
 })
