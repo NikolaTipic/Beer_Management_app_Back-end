@@ -14,7 +14,6 @@ router.post("/addDispenser", (req, res) => {
     invNumber = invNumber.trim();
     model = model.toLowerCase();
     model = model.trim();
-    location = location.toLowerCase();
 
     //days to sanitation
     const now = new Date;
