@@ -128,13 +128,14 @@ router.post("/signup", (req, res) => {
                                 password: hashedPassword,
                                 administrator
                             });
-    
-                            newUser.save().then(result => {
+
+                            newUser.collection("dispensers").insertOne().then(result => {
                                 res.json({
                                     status: "SUCCESS",
                                     message: "Signup successful",
                                     data: result,
                                 })
+                            
                             })
                             .catch(err => {
                                 res.json({
