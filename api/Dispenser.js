@@ -28,46 +28,53 @@ router.post("/addDispenser", (req, res) => {
     const roundDp = Math.round(daysPassed);
     const calcDaysToSanitation = 35 - roundDp;
 
-    //checking if dispenser already exist
-    Dispenser.find({invNumber}).then(result =>{
-        if (result.length) {
-            res.json({
-                status: "FAILED",
-                message: "Točionik s unsenim inventurnim brojem već postoji!"
-            })
-        }
-        else {
-            newDispenser = new Dispenser({
-                warehouse,
-                invNumber,
-                model,
-                location,
-                dateOfLastSanitation,
-                comment,
-                dts: calcDaysToSanitation
-            })
-        
-            newDispenser.save().then(result => {
-                res.json({
-                    status: "SUCCESS",
-                    message: "Točionik dodan",
-                    data: result,
-                })
-            
-            })
-            .catch(err => {
-                res.json({
-                    status: "FAILED",
-                    message: "An error occurred while saving dispenser!"
-                })
-            })
-        }
-    }). catch(err => {
+    if(invNumber == "" || model == "" || model == "" || location.region == "" || location.city == "" || location.address == "" || dateOfLastSanitation == "") {
         res.json({
             status: "FAILED",
-            message: "An error occured while trying to find dispenser! "
+            message: "Morate ispuniti sva polja!"
         })
-    })
+    } else {
+        //checking if dispenser already exist
+        Dispenser.find({invNumber}).then(result =>{
+            if (result.length) {
+                res.json({
+                    status: "FAILED",
+                    message: "Točionik s unsenim inventurnim brojem već postoji!"
+                })
+            }
+            else {
+                newDispenser = new Dispenser({
+                    warehouse,
+                    invNumber,
+                    model,
+                    location,
+                    dateOfLastSanitation,
+                    comment,
+                    dts: calcDaysToSanitation
+                })
+            
+                newDispenser.save().then(result => {
+                    res.json({
+                        status: "SUCCESS",
+                        message: "Točionik dodan",
+                        data: result,
+                    })
+                
+                })
+                .catch(err => {
+                    res.json({
+                        status: "FAILED",
+                        message: "An error occurred while saving dispenser!"
+                    })
+                })
+            }
+        }). catch(err => {
+            res.json({
+                status: "FAILED",
+                message: "An error occured while trying to find dispenser! "
+            })
+        })
+    }
 })
 
 //findDispenser
