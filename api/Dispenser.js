@@ -9,17 +9,12 @@ const { add } = require("nodemon/lib/rules");
 //addDispenser
 router.post("/addDispenser", (req, res) => {
     let {warehouse, invNumber, model, location, dateOfLastSanitation, comment} = req.body;
-    let {region, city, address} = location;
+
     warehouse = warehouse.toLowerCase();
     invNumber = invNumber.trim();
     model = model.toLowerCase();
     model = model.trim();
-    region = region.toLowerCase();
-    region = region.trim();
-    city = city.toLowerCase();
-    city = city.trim();
-    address = address.toLowerCase();
-    address = address.trim();
+    location = location.toLowerCase();
 
     //days to sanitation
     const now = new Date;
