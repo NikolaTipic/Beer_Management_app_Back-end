@@ -110,7 +110,7 @@ router.post("/checkForExpiredSanitation", (req, res) => {
         if (result.length) {
             res.json({
                 status: "SUCCESS",
-                message: "Dispenser retrived",
+                message: "Točionici uspiješno dohvaćeni",
                 data: result
             });
         }
