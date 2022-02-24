@@ -4,7 +4,6 @@ const date = require("date-and-time")
 
 //mongo db dispenser model
 const Dispenser = require("../models/Dispenser");
-const { add } = require("nodemon/lib/rules");
 
 //addDispenser
 router.post("/addDispenser", (req, res) => {
@@ -28,7 +27,7 @@ router.post("/addDispenser", (req, res) => {
     const roundDp = Math.round(daysPassed);
     const calcDaysToSanitation = 35 - roundDp;
 
-    if(invNumber == "" || model == "" || model == "" || location.region == "" || location.city == "" || location.address == "" || dateOfLastSanitation == "") {
+    if(invNumber == "" || model == "" || model == "" || dateOfLastSanitation == "") {
         res.json({
             status: "FAILED",
             message: "Morate ispuniti sva polja!"
@@ -100,6 +99,32 @@ router.post("/findDispenser", (req, res) => {
         res.json({
             status: "FAILED",
             message: "An error occured while retrving dispenser"
+        })
+    })
+})
+
+//chech for dispensers that have less than 16 days to sanitation
+router.post("/checkForExpiredSanitation", (req, res) => {
+
+    Dispenser.find({dts: {$lt: 15}}).then( result => {
+        if (result.length) {
+            res.json({
+                status: "SUCCESS",
+                message: "Dispenser retrived",
+                data: result
+            });
+        }
+        else {
+            res.json({
+                status: "FAILED",
+                message: "Na svim tocionicima je obavljena sanitacija"
+            })
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error occured while retreving list of expired snitation dispensers!"
         })
     })
 })
