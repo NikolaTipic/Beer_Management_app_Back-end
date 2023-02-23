@@ -17,7 +17,7 @@ router.post("/addPart", (req, res) => {
             message: "Morate ispuniti sva polja!"
         })
     } else {
-        //checking if dispenser already exist
+        //checking if part already exist
         Part.find({productCode}).then(result =>{
             if (result.length) {
                 
@@ -35,6 +35,8 @@ router.post("/addPart", (req, res) => {
                     message: `Uspijesno ste dodali: ${quantity} - ${productName}`
                 })
             }
+
+        //if part do not exist, create New
             else {
                 newPart = new Part({
                     productName,
@@ -65,7 +67,34 @@ router.post("/addPart", (req, res) => {
             })
         })
     }
+});
+
+
+router.post("/getInventory", (req, res) => {
+
+    Part.find({}).then( result => {
+        if (result.length) {
+            res.json({
+                status: "SUCCESS",
+                message: "Skladište je uspiješno dohvaćeno",
+                data: result
+            });
+        }
+        else {
+            res.json({
+                status: "FAILED",
+                message: "Skladište je prazno"
+            })
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error occured while retreving inventory list!"
+        })
+    })
 })
+
 
 
 
