@@ -70,6 +70,57 @@ router.post("/addPart", (req, res) => {
 });
 
 
+
+//removePart
+router.post("/removePart", (req, res) => {
+    let { productName, productCode, quantity} = req.body;
+
+
+    
+
+    if(productName == "" || productCode == "" || quantity == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva obavezna polja!"
+        })
+    } else {
+        //checking if part already exist
+        Part.find({productCode}).then(result =>{
+            if (result.length) {
+                
+                Part.updateOne({productCode}, {$inc: {quantity: -quantity}}, {new: true}, (error, data) => {
+                    if(error) {
+                        console.log(error);
+                    }
+                    else {
+                        console.log(data);
+                    }
+                });
+
+                res.json({
+                    status: "SUCCESS",
+                    message: `Uspijesno ste oduzeli: ${quantity} - ${productName}`
+                })
+            }
+
+        //if part do not exist, create New
+            else {
+                res.json({
+                    status: "FAILED",
+                    message: "Unos šifre ne odgovara nijednom proizvodu u skladištu!"
+                })
+            }
+        }). catch(err => {
+            res.json({
+                status: "FAILED",
+                message: "An error occured while trying to find product! "
+            })
+        })
+    }
+});
+
+
+
 router.post("/getInventory", (req, res) => {
 
     Part.find({}).then( result => {
