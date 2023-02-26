@@ -50,7 +50,7 @@ router.post("/addPart", (req, res) => {
                 newPart.save().then(result => {
                     res.json({
                         status: "SUCCESS",
-                        message: `Uspiješno ste dodali novi prizvod: ${productName} + ${quantity}`,
+                        message: `Uspiješno ste dodali novi prizvod: ${productName} + ${quantity}${quantityUnit}`,
                         data: result,
                     })
                 
