@@ -3,6 +3,8 @@ const router = express.Router();
 
 //mongo db Part model
 const Part = require("../models/Parts");
+//mongo sb Servicer model
+const Servicer = require("../models/Servicer");
 
 //addPart
 router.post("/addPart", (req, res) => {
@@ -120,7 +122,7 @@ router.post("/removePart", (req, res) => {
 });
 
 
-
+//getInventory
 router.post("/getInventory", (req, res) => {
 
     Part.find({}).then( result => {
@@ -145,6 +147,91 @@ router.post("/getInventory", (req, res) => {
         })
     })
 })
+
+
+//addToServicer
+router.post("/addToServicer", (req, res) => {
+    let {quantityUnit, productName, productCode, quantity, servName} = req.body;
+
+
+    
+
+    if(productName == "" || productCode == "" || quantity == "" || servName == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja!"
+        })
+    } else {
+        //checking if part exist
+        Part.find({productCode}).then(result =>{
+            if (result.length) {
+                Servicer.find({productCode}).then(result => {
+                    if (result.length) {
+                        Servicer.updateOne({productCode}, {$inc: {quantity: quantity}}, {new: true}, (error, data) => {
+                            if(error) {
+                                console.log(error);
+                            }
+                            else {
+                                console.log(data);
+                            }
+                        })
+
+                        res.json({
+                            status: "SUCCESS",
+                            message: `Uspiješno ste dodali - ${servName}: ${quantity} - ${productName}`
+                        });
+
+                        Part.updateOne({productCode}, {$inc: {quantity: -quantity}}, {new: true}, (error, data) => {
+                            if(error) {
+                                console.log(error);
+                            }
+                            else {
+                                console.log(data);
+                            }
+                        });
+                        
+                    } else {
+                        newServicerPart = new Servicer({
+                            productName,
+                            productCode,
+                            servName,
+                            quantity,
+                            quantityUnit
+                        })
+                    
+                        newServicerPart.save().then(result => {
+                            res.json({
+                                status: "SUCCESS",
+                                message: `Uspiješno ste dodali novi prizvod ${servName}: ${productName} - ${quantity}`,
+                                data: result,
+                            })
+                        
+                        })
+                        .catch(err => {
+                            res.json({
+                                status: "FAILED",
+                                message: "An error occurred while adding product to servicer!"
+                            })
+                        })
+                    }
+                }) 
+            }
+
+        //handling errors
+            else {
+                res.json({
+                    status: "FAILED",
+                    message: "Proizvod pod unesenom šifrom ne postoji na vašem skladištu"
+                });
+            }
+        }). catch(err => {
+            res.json({
+                status: "FAILED",
+                message: "An error occured while trying to find product! "
+            })
+        })
+    }
+});
 
 
 
