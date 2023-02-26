@@ -169,7 +169,7 @@ router.post("/addToServicer", (req, res) => {
                 //console.log(result)
                 Servicer.find({productCode, servName}).then(result => {
                     if (result.length) {
-                        Servicer.updateOne({productCode}, {$inc: {quantity: quantity}}, {new: true}, (error, data) => {
+                        Servicer.updateOne({productCode, servName}, {$inc: {quantity: quantity}}, {new: true}, (error, data) => {
                             if(error) {
                                 console.log(error);
                             }
