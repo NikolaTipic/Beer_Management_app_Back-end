@@ -178,7 +178,7 @@ router.post("/addToServicer", (req, res) => {
 
                         res.json({
                             status: "SUCCESS",
-                            message: `Uspiješno ste dodali - ${servName}: ${quantity} - ${productName}`
+                            message: `Uspiješno ste dodali - ${servName}: ${quantity} + ${productName}`
                         });
 
                         Part.updateOne({productCode}, {$inc: {quantity: -quantity}}, {new: true}, (error, data) => {
@@ -202,7 +202,7 @@ router.post("/addToServicer", (req, res) => {
                         newServicerPart.save().then(result => {
                             res.json({
                                 status: "SUCCESS",
-                                message: `Uspiješno ste dodali novi prizvod ${servName}: ${productName} - ${quantity}`,
+                                message: `Uspiješno ste dodali novi prizvod ${servName}: ${productName} + ${quantity}`,
                                 data: result,
                             })
                         
