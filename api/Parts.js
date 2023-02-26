@@ -34,7 +34,7 @@ router.post("/addPart", (req, res) => {
 
                 res.json({
                     status: "SUCCESS",
-                    message: `Uspijesno ste dodali: ${quantity} - ${productName}`
+                    message: `Uspijesno ste dodali: ${productName} + ${quantity}`
                 })
             }
 
@@ -50,7 +50,7 @@ router.post("/addPart", (req, res) => {
                 newPart.save().then(result => {
                     res.json({
                         status: "SUCCESS",
-                        message: `Uspiješno ste dodali novi prizvod: ${productName} - ${quantity}`,
+                        message: `Uspiješno ste dodali novi prizvod: ${productName} + ${quantity}`,
                         data: result,
                     })
                 
@@ -165,6 +165,8 @@ router.post("/addToServicer", (req, res) => {
         //checking if part exist
         Part.find({productCode}).then(result =>{
             if (result.length) {
+                //napravit ime proizvoda, ono koje vraca iz baze, da korisnik unosi samo sifru bez imena proizvoda
+                //console.log(result)
                 Servicer.find({productCode, servName}).then(result => {
                     if (result.length) {
                         Servicer.updateOne({productCode}, {$inc: {quantity: quantity}}, {new: true}, (error, data) => {
@@ -174,7 +176,7 @@ router.post("/addToServicer", (req, res) => {
                             else {
                                 console.log(data);
                             }
-                        })
+                        });
 
                         res.json({
                             status: "SUCCESS",
