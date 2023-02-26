@@ -165,7 +165,7 @@ router.post("/addToServicer", (req, res) => {
         //checking if part exist
         Part.find({productCode}).then(result =>{
             if (result.length) {
-                Servicer.find({productCode}).then(result => {
+                Servicer.find({productCode, servName}).then(result => {
                     if (result.length) {
                         Servicer.updateOne({productCode}, {$inc: {quantity: quantity}}, {new: true}, (error, data) => {
                             if(error) {
@@ -189,7 +189,7 @@ router.post("/addToServicer", (req, res) => {
                                 console.log(data);
                             }
                         });
-                        
+
                     } else {
                         newServicerPart = new Servicer({
                             productName,
@@ -213,6 +213,15 @@ router.post("/addToServicer", (req, res) => {
                                 message: "An error occurred while adding product to servicer!"
                             })
                         })
+
+                        Part.updateOne({productCode}, {$inc: {quantity: -quantity}}, {new: true}, (error, data) => {
+                            if(error) {
+                                console.log(error);
+                            }
+                            else {
+                                console.log(data);
+                            }
+                        });
                     }
                 }) 
             }
