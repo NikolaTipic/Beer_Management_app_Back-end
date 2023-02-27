@@ -151,6 +151,33 @@ router.post("/getInventory", (req, res) => {
 })
 
 
+//getServicerInventory
+router.post("/getServicerInventory", (req, res) => {
+
+    Servicer.find({}).then( result => {
+        if (result.length) {
+            res.json({
+                status: "SUCCESS",
+                message: "Skladište je uspiješno dohvaćeno",
+                data: result
+            });
+        }
+        else {
+            res.json({
+                status: "FAILED",
+                message: "Skladište je prazno"
+            })
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error occured while retreving inventory list!"
+        })
+    })
+})
+
+
 //addToServicer
 router.post("/addToServicer", (req, res) => {
     let {quantityUnit, productName, productCode, quantity, servName} = req.body;
