@@ -295,7 +295,7 @@ router.post("/addToExpense", (req, res) => {
 
                         res.json({
                             status: "SUCCESS",
-                            message: `Uspiješno ste dodali u rashod: ${result[0].productName} +${quantity}`
+                            message: `Uspiješno ste dodali u rashod: ${result[0].productName} +${quantity}${result[0].quantityUnit}`
                         });
 
                         Part.updateOne({productCode}, {$inc: {quantity: -quantity}}, {new: true}, (error, data) => {
@@ -318,7 +318,7 @@ router.post("/addToExpense", (req, res) => {
                         newExpensePart.save().then(result => {
                             res.json({
                                 status: "SUCCESS",
-                                message: `Uspiješno ste dodali novi prizvod u rashod: ${resultpart[0].productName} +${quantity}`,
+                                message: `Uspiješno ste dodali novi prizvod u rashod: ${resultpart[0].productName} +${quantity}${resultpart[0].quantityUnit}`,
                                 data: result
                             })
                         
