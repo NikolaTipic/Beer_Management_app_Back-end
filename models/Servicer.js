@@ -2,11 +2,14 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const ServicersSchema = new Schema({
-    productName: String,
-    productCode: Number,
-    servName: String,
-    quantity: Number,
-    quantityUnit: String
+    name: String,
+    dispensers: [{}],
+    parts: [{
+        productName: String,
+        productCode: String,
+        quantity: Number,
+        unit: String
+    }]
 });
 
 const Servicer = mongoose.model("Servicer", ServicersSchema);
