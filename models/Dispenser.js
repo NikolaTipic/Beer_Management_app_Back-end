@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const DispenserSchema = new Schema({
     warehouse: String,
-    invNumber: Number,
+    invNumber: String,
     model: String,
     location: {
         region: String,

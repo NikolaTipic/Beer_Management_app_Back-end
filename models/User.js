@@ -8,7 +8,7 @@ const UserSchema = new Schema({
     administrator: Boolean,
     dispensers: [{
         serialNumber: Number,
-        inventurniNumber: Number,
+        inventurniNumber: String,
         type: String
     }],
     parts: [{partName: String}] 

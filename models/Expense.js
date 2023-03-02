@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const ExpensesSchema = new Schema({
     productName: String,
-    productCode: Number,
+    productCode: String,
     quantity: Number,
     quantityUnit: String
 });

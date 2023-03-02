@@ -37,7 +37,7 @@ router.post("/addPart", (req, res) => {
 
                 res.json({
                     status: "SUCCESS",
-                    message: `Uspijesno ste dodali: ${productName} + ${quantity}`
+                    message: `Uspijesno ste dodali: ${productName} +${quantity} ${quantityUnit}`
                 })
             }
 
@@ -53,7 +53,7 @@ router.post("/addPart", (req, res) => {
                 newPart.save().then(result => {
                     res.json({
                         status: "SUCCESS",
-                        message: `Uspiješno ste dodali novi prizvod: ${productName} + ${quantity}${quantityUnit}`,
+                        message: `Uspiješno ste dodali novi prizvod: ${productName} +${quantity} ${quantityUnit}`,
                         data: result,
                     })
 
@@ -104,7 +104,7 @@ router.post("/removePart", (req, res) => {
 
                 res.json({
                     status: "SUCCESS",
-                    message: `Uspijesno ste oduzeli: ${quantity} - ${productName}`
+                    message: `Uspijesno ste oduzeli: ${quantity} -${productName}`
                 })
             }
 
@@ -191,7 +191,7 @@ router.post("/addToExpense", (req, res) => {
     } else {
         //checking if part exist
         Part.find({ productCode }).then(resultpart => {
-            if (resultpart.length) {
+            if (resultpart.length & resultpart[0].quantity > 0) {
                 // [
                 //     {
                 //       _id: new ObjectId("63fb5110003df1bdec49bd85"),
@@ -267,7 +267,7 @@ router.post("/addToExpense", (req, res) => {
             else {
                 res.json({
                     status: "FAILED",
-                    message: "Proizvod pod unesenom šifrom ne postoji na vašem skladištu"
+                    message: "Proizvod pod unesenom šifrom ne postoji na vašem centralnom skladištu ILI ste ga potrošili"
                 });
             }
         }).catch(err => {
@@ -294,7 +294,7 @@ router.post("/addToServicer", (req, res) => {
     } else {
         //checking if part exist
         Part.find({ productCode }).then(resultpart => {
-            if (resultpart.length) {
+            if (resultpart.length & resultpart[0].quantity > 0) {
 
                 Servicer.find({ name }).then(resultName => {
                     if (resultName.length) {
@@ -311,7 +311,7 @@ router.post("/addToServicer", (req, res) => {
 
                                 res.json({
                                     status: "SUCCESS",
-                                    message: `Uspiješno ste dodali - ${name}: ${resultpart[0].productName} +${quantity}`
+                                    message: `Uspiješno ste dodali - ${name}: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit}`
                                 });
 
                                 Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
@@ -335,7 +335,7 @@ router.post("/addToServicer", (req, res) => {
 
                                 res.json({
                                     status: "SUCCESS",
-                                    message: `Uspiješno ste dodali novi proizvod: ${resultpart[0].productName} +${quantity} - ${name}`
+                                    message: `Uspiješno ste dodali novi proizvod: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit} - ${name}`
                                 });
 
                                 Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
@@ -363,7 +363,7 @@ router.post("/addToServicer", (req, res) => {
                         newServicer.save().then(result => {
                             res.json({
                                 status: "SUCCESS",
-                                message: `Uspiješno ste dodali novog Servisera: ${name}, i proizvod: ${resultpart[0].productName} + ${quantity}`,
+                                message: `Uspiješno ste dodali novog Servisera: ${name}, i proizvod: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit}`,
                                 data: result,
                             })
 
@@ -391,7 +391,7 @@ router.post("/addToServicer", (req, res) => {
             else {
                 res.json({
                     status: "FAILED",
-                    message: "Proizvod pod unesenom šifrom ne postoji na vašem skladištu"
+                    message: "Proizvod pod unesenom šifrom ne postoji na vašem centralnom skladištu ILI ste ga potrošili!"
                 });
             }
         }).catch(err => {
