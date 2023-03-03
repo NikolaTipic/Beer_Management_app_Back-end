@@ -203,7 +203,26 @@ router.post("/getExpenseInventory", (req, res) => {
             message: "An error occured while retreving expense inventory list!"
         })
     })
-})
+});
+
+
+//deleteExpenseInventory
+router.post("/deleteExpenseInventory", (req, res) => {
+
+    Expense.deleteMany({}).then(result => {
+            res.json({
+                status: "SUCCESS",
+                message: "Skladište Rashoda je uspiješno Obrisano",
+                data: result
+        })
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error occured while Deleteing expense inventory list!"
+        })
+    })
+});
 
 
 //addToExpense
