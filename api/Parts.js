@@ -173,10 +173,37 @@ router.post("/getServicerInventory", (req, res) => {
         console.log(err);
         res.json({
             status: "FAILED",
-            message: "An error occured while retreving inventory list!"
+            message: "An error occured while retreving servicer inventory list!"
         })
     })
 });
+
+
+//getExpenseInventory
+router.post("/getExpenseInventory", (req, res) => {
+
+    Expense.find({}).then(result => {
+        if (result.length) {
+            res.json({
+                status: "SUCCESS",
+                message: "Skladište Rashoda je uspiješno dohvaćeno",
+                data: result
+            });
+        }
+        else {
+            res.json({
+                status: "FAILED",
+                message: "Skladište je prazno"
+            })
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error occured while retreving expense inventory list!"
+        })
+    })
+})
 
 
 //addToExpense
