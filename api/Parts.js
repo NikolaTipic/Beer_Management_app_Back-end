@@ -159,14 +159,14 @@ router.post("/getServicerInventory", (req, res) => {
         if (result.length) {
             res.json({
                 status: "SUCCESS",
-                message: "Skladište je uspiješno dohvaćeno",
+                message: "Serviseri su uspiješno dohvaćeni",
                 data: result
             });
         }
         else {
             res.json({
                 status: "FAILED",
-                message: "Skladište je prazno"
+                message: "Nema dodanih Servisera u bazi podataka!"
             })
         }
     }).catch(err => {
