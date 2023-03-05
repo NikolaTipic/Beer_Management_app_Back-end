@@ -210,10 +210,10 @@ router.post("/getExpenseInventory", (req, res) => {
 router.post("/deleteExpenseInventory", (req, res) => {
 
     Expense.deleteMany({}).then(result => {
-            res.json({
-                status: "SUCCESS",
-                message: "Skladište Rashoda je uspiješno Obrisano",
-                data: result
+        res.json({
+            status: "SUCCESS",
+            message: "Skladište Rashoda je uspiješno Obrisano",
+            data: result
         })
     }).catch(err => {
         console.log(err);
@@ -237,83 +237,79 @@ router.post("/addToExpense", (req, res) => {
     } else {
         //checking if part exist
         Part.find({ productCode }).then(resultpart => {
-            if (resultpart.length & resultpart[0].quantity > 0) {
-                // [
-                //     {
-                //       _id: new ObjectId("63fb5110003df1bdec49bd85"),
-                //       productName: 'Kegglava',
-                //       productCode: 1111,
-                //       quantity: 0,
-                //       quantityUnit: '',
-                //       __v: 0
-                //     }
-                //   ]
+            if (resultpart.length) {
+                if (resultpart[0].quantity >= quantity) {
+                    Expense.find({ productCode }).then(result => {
+                        if (result.length) {
+                            Expense.updateOne({ productCode }, { $inc: { quantity: quantity } }, { new: true }, (error, data) => {
+                                if (error) {
+                                    console.log(error);
+                                }
+                                else {
+                                    console.log(data);
+                                }
+                            });
 
-                Expense.find({ productCode }).then(result => {
-                    if (result.length) {
-                        Expense.updateOne({ productCode }, { $inc: { quantity: quantity } }, { new: true }, (error, data) => {
-                            if (error) {
-                                console.log(error);
-                            }
-                            else {
-                                console.log(data);
-                            }
-                        });
-
-                        res.json({
-                            status: "SUCCESS",
-                            message: `Uspiješno ste dodali u rashod: ${result[0].productName} +${quantity}${result[0].quantityUnit}`
-                        });
-
-                        Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
-                            if (error) {
-                                console.log(error);
-                            }
-                            else {
-                                console.log(data);
-                            }
-                        });
-
-                    } else {
-                        newExpensePart = new Expense({
-                            productName: resultpart[0].productName,
-                            productCode,
-                            quantity,
-                            quantityUnit: resultpart[0].quantityUnit
-                        })
-
-                        newExpensePart.save().then(result => {
                             res.json({
                                 status: "SUCCESS",
-                                message: `Uspiješno ste dodali novi prizvod u rashod: ${resultpart[0].productName} +${quantity}${resultpart[0].quantityUnit}`,
-                                data: result
+                                message: `Uspiješno ste dodali u rashod: ${result[0].productName} +${quantity}${result[0].quantityUnit}`
+                            });
+
+                            Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
+                                if (error) {
+                                    console.log(error);
+                                }
+                                else {
+                                    console.log(data);
+                                }
+                            });
+
+                        } else {
+                            newExpensePart = new Expense({
+                                productName: resultpart[0].productName,
+                                productCode,
+                                quantity,
+                                quantityUnit: resultpart[0].quantityUnit
                             })
 
-                        })
-                            .catch(err => {
+                            newExpensePart.save().then(result => {
                                 res.json({
-                                    status: "FAILED",
-                                    message: "An error occurred while adding product to expense!"
+                                    status: "SUCCESS",
+                                    message: `Uspiješno ste dodali novi prizvod u rashod: ${resultpart[0].productName} +${quantity}${resultpart[0].quantityUnit}`,
+                                    data: result
                                 })
-                            })
 
-                        Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
-                            if (error) {
-                                console.log(error);
-                            }
-                            else {
-                                console.log(data);
-                            }
-                        });
-                    }
-                })
+                            })
+                                .catch(err => {
+                                    res.json({
+                                        status: "FAILED",
+                                        message: "An error occurred while adding product to expense!"
+                                    })
+                                })
+
+                            Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
+                                if (error) {
+                                    console.log(error);
+                                }
+                                else {
+                                    console.log(data);
+                                }
+                            });
+                        }
+                    })
+                } else {
+                    res.json({
+                        status: "FAILED",
+                        message: `Nemate dovolju kolicinu ${resultpart[0].productName} da bi dodali u rashod`
+                    });
+                }
             }
 
             //handling errors
             else {
                 res.json({
                     status: "FAILED",
-                    message: "Proizvod pod unesenom šifrom ne postoji na vašem centralnom skladištu ILI ste ga potrošili"
+                    message: "Proizvod pod unesenom šifrom ne postoji na vašem centralnom skladištu!"
                 });
             }
         }).catch(err => {
@@ -340,104 +336,110 @@ router.post("/addToServicer", (req, res) => {
     } else {
         //checking if part exist
         Part.find({ productCode }).then(resultpart => {
-            if (resultpart.length & resultpart[0].quantity > 0) {
+            if (resultpart.length) {
+                if (resultpart[0].quantity >= quantity) {
+                    Servicer.find({ name }).then(resultName => {
+                        if (resultName.length) {
+                            Servicer.find({ name, "parts.productCode": productCode }).then(result => {
+                                if (result.length) {
+                                    Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": quantity } }, { new: true }, (error, data) => {
+                                        if (error) {
+                                            console.log(error);
+                                        }
+                                        else {
+                                            console.log(data);
+                                        }
+                                    });
 
-                Servicer.find({ name }).then(resultName => {
-                    if (resultName.length) {
-                        Servicer.find({ name, "parts.productCode": productCode }).then(result => {
-                            if (result.length) {
-                                Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": quantity } }, { new: true }, (error, data) => {
-                                    if (error) {
-                                        console.log(error);
-                                    }
-                                    else {
-                                        console.log(data);
-                                    }
-                                });
+                                    res.json({
+                                        status: "SUCCESS",
+                                        message: `Uspiješno ste dodali - ${name}: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit}`
+                                    });
 
-                                res.json({
-                                    status: "SUCCESS",
-                                    message: `Uspiješno ste dodali - ${name}: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit}`
-                                });
+                                    Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
+                                        if (error) {
+                                            console.log(error);
+                                        }
+                                        else {
+                                            console.log(data);
+                                        }
+                                    });
 
-                                Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
-                                    if (error) {
-                                        console.log(error);
-                                    }
-                                    else {
-                                        console.log(data);
-                                    }
-                                });
+                                } else {
+                                    Servicer.updateOne({ name }, { $push: { parts: { productName: resultpart[0].productName, productCode, quantity, unit: resultpart[0].quantityUnit } } }, (error, data) => {
+                                        if (error) {
+                                            console.log(error);
+                                        }
+                                        else {
+                                            console.log(data);
+                                        }
+                                    });
 
-                            } else {
-                                Servicer.updateOne({ name }, { $push: { parts: { productName: resultpart[0].productName, productCode, quantity, unit: resultpart[0].quantityUnit } } }, (error, data) => {
-                                    if (error) {
-                                        console.log(error);
-                                    }
-                                    else {
-                                        console.log(data);
-                                    }
-                                });
+                                    res.json({
+                                        status: "SUCCESS",
+                                        message: `Uspiješno ste dodali novi proizvod: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit} - ${name}`
+                                    });
 
-                                res.json({
-                                    status: "SUCCESS",
-                                    message: `Uspiješno ste dodali novi proizvod: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit} - ${name}`
-                                });
-
-                                Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
-                                    if (error) {
-                                        console.log(error);
-                                    }
-                                    else {
-                                        console.log(data);
-                                    }
-                                });
-                            }
-                        })
-
-                    } else {
-                        newServicer = new Servicer({
-                            name,
-                            parts: {
-                                productName: resultpart[0].productName,
-                                productCode,
-                                quantity,
-                                unit: resultpart[0].quantityUnit
-                            }
-                        })
-
-                        newServicer.save().then(result => {
-                            res.json({
-                                status: "SUCCESS",
-                                message: `Uspiješno ste dodali novog Servisera: ${name}, i proizvod: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit}`,
-                                data: result,
+                                    Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
+                                        if (error) {
+                                            console.log(error);
+                                        }
+                                        else {
+                                            console.log(data);
+                                        }
+                                    });
+                                }
                             })
 
-                        })
-                            .catch(err => {
+                        } else {
+                            newServicer = new Servicer({
+                                name,
+                                parts: {
+                                    productName: resultpart[0].productName,
+                                    productCode,
+                                    quantity,
+                                    unit: resultpart[0].quantityUnit
+                                }
+                            })
+
+                            newServicer.save().then(result => {
                                 res.json({
-                                    status: "FAILED",
-                                    message: "An error occurred while creating new servicer!"
+                                    status: "SUCCESS",
+                                    message: `Uspiješno ste dodali novog Servisera: ${name}, i proizvod: ${resultpart[0].productName} +${quantity} ${resultpart[0].quantityUnit}`,
+                                    data: result,
                                 })
-                            })
 
-                        Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
-                            if (error) {
-                                console.log(error);
-                            }
-                            else {
-                                console.log(data);
-                            }
-                        });
-                    }
-                })
+                            })
+                                .catch(err => {
+                                    res.json({
+                                        status: "FAILED",
+                                        message: "An error occurred while creating new servicer!"
+                                    })
+                                })
+
+                            Part.updateOne({ productCode }, { $inc: { quantity: -quantity } }, { new: true }, (error, data) => {
+                                if (error) {
+                                    console.log(error);
+                                }
+                                else {
+                                    console.log(data);
+                                }
+                            });
+                        }
+                    })
+                } else {
+                    res.json({
+                        status: "FAILED",
+                        message: `Nemate dovolju kolicinu ${resultpart[0].productName} da bi zadužili servisera`
+                    });
+                }
             }
 
             //handling errors
             else {
                 res.json({
                     status: "FAILED",
-                    message: "Proizvod pod unesenom šifrom ne postoji na vašem centralnom skladištu ILI ste ga potrošili!"
+                    message: "Proizvod pod unesenom šifrom ne postoji na vašem centralnom skladištu!"
                 });
             }
         }).catch(err => {
