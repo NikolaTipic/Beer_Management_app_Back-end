@@ -37,7 +37,7 @@ router.post("/addPart", (req, res) => {
 
                 res.json({
                     status: "SUCCESS",
-                    message: `Uspijesno ste dodali: ${productName} +${quantity} ${quantityUnit}`
+                    message: `Uspijesno ste dodali: ${result[0].productName} +${quantity} ${result[0].quantityUnit}`
                 })
             }
 
