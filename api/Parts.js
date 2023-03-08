@@ -452,5 +452,75 @@ router.post("/addToServicer", (req, res) => {
 });
 
 
+//fromServicerToCentral
+router.post("/fromServicerToCentral", (req, res) => {
+    let { name, productCode, quantity } = req.body;
+
+    if (productCode == "" || quantity == "" || name == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja!"
+        });
+    } else {
+        //checking if servicer exist
+        Servicer.find({ name }).then(resultName => {
+            if (resultName.length) {
+                Servicer.find({ name, "parts.productCode": productCode }).then(resultpart => {
+                    if (resultpart.length) {
+                        Servicer.find({name, "parts.productCode": productCode}, {"parts.$": 1}).then(result => {
+                            if(result[0].parts[0].quantity >= quantity) {
+                                Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
+                                    if (error) {
+                                        res.json({
+                                            status: "FAILED",
+                                            message: `Error has occured while trying to remove part from Sericer ${name}, check your internet connection`
+                                        });
+                                    }
+                                    else {
+                                        Part.updateOne({ productCode }, { $inc: { quantity: quantity } }, { new: true }, (error, data) => {
+                                            if (error) {
+                                                res.json({
+                                                    status: "FAILED",
+                                                    message: `Error has occured while trying to add part to Central inventory from Sericer ${name} , check your internet connection`
+                                                });
+                                            }
+                                            else {
+                                                res.json({
+                                                    status: "SUCCESS",
+                                                    message: `Razdužili ste Servisera: ${name}, i dodali u centralno skladište: ${result[0].parts[0].productName} +${quantity}`
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            } else {
+                                res.json({
+                                    status: "FAILED",
+                                    message: `Serviser: ${name}, nema toliku kolicinu, ${name} ima: ${result[0].parts[0].quantity} - ${result[0].parts[0].productName}`
+                                });
+                            }
+                        })
+                    } else {
+                        res.json({
+                            status: "FAILED",
+                            message: `Serviser: ${name} nema proizvod pod unesenom šifrom - ${productCode}`
+                        });
+                    }
+                });
+            } else {
+                res.json({
+                    status: "FAILED",
+                    message: "Serviser pod unsenim imenom ne postoji u vasoj bazi podataka!"
+                });
+            }
+        }).catch(err => {
+            res.json({
+                status: "FAILED",
+                message: "An error occured while trying to find servicer! "
+            })
+        })
+    }
+});
+
 
 module.exports = router;
