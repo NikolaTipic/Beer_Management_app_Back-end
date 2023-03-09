@@ -8,13 +8,14 @@ const Facility = require("../models/Facility");
 router.post("/addFacility", (req, res) => {
     let { name, location, comment } = req.body;
 
-
     if ( name == "" || location == "" ) {
         res.json({
             status: "FAILED",
             message: "Morate navesti ime objekta i lokaciju!"
         })
     } else {
+
+        name = name.toUpperCase();
         //checking if Facility already exist
         Facility.find({name}).then(result => {
             if (result.length) {
