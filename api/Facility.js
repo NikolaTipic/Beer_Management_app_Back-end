@@ -104,9 +104,9 @@ router.post("/deleteFacility", (req, res) => {
 
 //fromFacilityToServicer
 router.post("/fromFacilityToServicer", (req, res) => {
-    let { name, facilityName, productCode, quantity } = req.body;
+    let { name, id, productCode, quantity } = req.body;
 
-    if (productCode == "" || quantity == "" || name == "" || facilityName == "") {
+    if (productCode == "" || quantity == "" || name == "" || id == "") {
         res.json({
             status: "FAILED",
             message: "Morate ispuniti sva polja!"
@@ -116,15 +116,13 @@ router.post("/fromFacilityToServicer", (req, res) => {
     }
     // TODO read about database transactions (commit, rollback)
 
-    facilityName = facilityName.toUpperCase();
-
     const fromFacilityToServicer = async function () {
         try {
-            const selectedFacility = await Facility.findOne({ name: facilityName });
+            const selectedFacility = await Facility.findOne({ id });
             if (!selectedFacility) {
                 res.json({
                     status: "FAILED",
-                    message: "Objekt pod unsenim imenom ne postoji u vasoj bazi podataka!"
+                    message: "Objekt pod unsenim ID-em ne postoji u vašoj bazi podataka!"
                 });
                 return;
             }
@@ -133,7 +131,7 @@ router.post("/fromFacilityToServicer", (req, res) => {
             if (!partResult) {
                 res.json({
                     status: "FAILED",
-                    message: `Objekt ${facilityName} nema proizvod pod šifrom: ${productCode}!`
+                    message: `Objekt ${selectedFacility.name} nema proizvod pod šifrom: ${productCode}!`
                 });
                 return;
             }
@@ -141,7 +139,7 @@ router.post("/fromFacilityToServicer", (req, res) => {
             if (quantity > partResult.quantity) {
                 res.json({
                     status: "FAILED",
-                    message: `Objekt ${facilityName} nema toliku kolićinu proizvoda pod šifrom: ${productCode}, objekt ima: ${partResult.productName}-${partResult.quantity}!`
+                    message: `Objekt ${selectedFacility.name} nema toliku kolićinu proizvoda pod šifrom: ${productCode}, objekt ima: ${partResult.productName}-${partResult.quantity}!`
                 });
                 return;
             }
@@ -155,7 +153,7 @@ router.post("/fromFacilityToServicer", (req, res) => {
                 return;
             }
 
-            Facility.updateOne({ name: facilityName, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
+            Facility.updateOne({ id, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
                 if (error) {
                     res.json({
                         status: "FAILED",
@@ -177,7 +175,7 @@ router.post("/fromFacilityToServicer", (req, res) => {
 
                         res.json({
                             status: "SUCCESS",
-                            message: `Uspiješno ste razdužili Objekt: ${facilityName}: ${partResult.productName} -${quantity} i dodali novi proizvod Serviseru ${name}`
+                            message: `Uspiješno ste razdužili Objekt: ${selectedFacility.name}: ${partResult.productName} -${quantity} i dodali novi proizvod Serviseru ${name}`
                         });
                     });
                 } else {
@@ -191,7 +189,7 @@ router.post("/fromFacilityToServicer", (req, res) => {
                         }
                         res.json({
                             status: "SUCCESS",
-                            message: `Uspiješno ste razdužili Objekt: ${facilityName}: ${partResult.productName} -${quantity} i dodali serviseru ${name}`
+                            message: `Uspiješno ste razdužili Objekt: ${selectedFacility.name}: ${partResult.productName} -${quantity} i dodali serviseru ${name}`
                         });
                     });
                 }
