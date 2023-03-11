@@ -7,9 +7,9 @@ const Servicer = require("../models/Servicer");
 
 //addFacility
 router.post("/addFacility", (req, res) => {
-    let { name, location, comment } = req.body;
+    let { id, name, location, comment } = req.body;
 
-    if (name == "" || location == "") {
+    if ( id === "" || name == "" || location == "") {
         res.json({
             status: "FAILED",
             message: "Morate navesti ime objekta i lokaciju!"
@@ -20,18 +20,19 @@ router.post("/addFacility", (req, res) => {
     name = name.toUpperCase();
 
     //checking if Facility already exist
-    Facility.find({ name }).then(result => {
+    Facility.find({ id }).then(result => {
         if (result.length) {
 
             res.json({
                 status: "FAILED",
-                message: `Objekt s navedenim imenom: ${name}, već postoji`
+                message: `Objekt s navedenim ID-objekta :${id}, već postoji`
             })
             return;
         }
 
         //if part do not exist, create New
         newFacility = new Facility({
+            id,
             name,
             location,
             comment
@@ -62,24 +63,22 @@ router.post("/addFacility", (req, res) => {
 
 //deleteFacility
 router.post("/deleteFacility", (req, res) => {
-    let { name } = req.body;
+    let { id } = req.body;
 
-    if (name == "") {
+    if (id === "") {
         res.json({
             status: "FAILED",
-            message: "Morate navesti ime objekta kojeg zelite obrisati!"
+            message: "Morate navesti ID objekta kojeg zelite obrisati!"
         })
         return;
     }
 
-    name = name.toUpperCase();
-
-    Facility.find({ name }).then(result => {
+    Facility.find({ id }).then(result => {
         if (result.length) {
-            Facility.deleteOne({ name }).then(delResult => {
+            Facility.deleteOne({ id }).then(delResult => {
                 res.json({
                     status: "SUCCESS",
-                    message: `Objekt ${name} je uspiješno Obrisan`,
+                    message: `Objekt - ${id}, je uspiješno Obrisan`,
                     data: delResult
                 });
             }).catch(err => {
@@ -91,7 +90,7 @@ router.post("/deleteFacility", (req, res) => {
         } else {
             res.json({
                 status: "FAILED",
-                message: `Objekt s imenom: ${name}, ne postoji u vasoj bazi podataka!`
+                message: `Objekt - ID: ${id}, ne postoji u vasoj bazi podataka!`
             });
         }
     }).catch(err => {
