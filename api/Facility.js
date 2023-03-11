@@ -14,50 +14,49 @@ router.post("/addFacility", (req, res) => {
             status: "FAILED",
             message: "Morate navesti ime objekta i lokaciju!"
         })
-    } else {
+        return;
+    }
 
-        name = name.toUpperCase();
-        //checking if Facility already exist
-        Facility.find({ name }).then(result => {
-            if (result.length) {
+    name = name.toUpperCase();
 
-                res.json({
-                    status: "FAILED",
-                    message: `Objekt s navedenim imenom: ${name}, već postoji`
-                })
-            }
+    //checking if Facility already exist
+    Facility.find({ name }).then(result => {
+        if (result.length) {
 
-            //if part do not exist, create New
-            else {
-                newFacility = new Facility({
-                    name,
-                    location,
-                    comment
-                })
-
-                newFacility.save().then(result => {
-                    res.json({
-                        status: "SUCCESS",
-                        message: `Uspiješno ste dodali novi objekt: ${name}, na adresi: ${location.address}`,
-                        data: result,
-                    })
-
-                })
-                    .catch(err => {
-                        res.json({
-                            status: "FAILED",
-                            message: "An error occurred while adding new Facility!"
-                        })
-                    })
-            }
-        }).catch(err => {
-            console.log(err)
             res.json({
                 status: "FAILED",
-                message: "An error occured while trying to find Facility! "
+                message: `Objekt s navedenim imenom: ${name}, već postoji`
             })
+            return;
+        }
+
+        //if part do not exist, create New
+        newFacility = new Facility({
+            name,
+            location,
+            comment
         })
-    }
+
+        newFacility.save().then(result => {
+            res.json({
+                status: "SUCCESS",
+                message: `Uspiješno ste dodali novi objekt: ${name}, na adresi: ${location.address}`,
+                data: result,
+            })
+
+        }).catch(err => {
+            res.json({
+                status: "FAILED",
+                message: "An error occurred while adding new Facility!"
+            })
+        });
+    }).catch(err => {
+        console.log(err)
+        res.json({
+            status: "FAILED",
+            message: "An error occured while trying to find Facility! "
+        });
+    });
 });
 
 
@@ -70,36 +69,37 @@ router.post("/deleteFacility", (req, res) => {
             status: "FAILED",
             message: "Morate navesti ime objekta kojeg zelite obrisati!"
         })
-    } else {
-        name = name.toUpperCase();
+        return;
+    }
 
-        Facility.find({ name }).then(result => {
-            if (result.length) {
-                Facility.deleteOne({ name }).then(delResult => {
-                    res.json({
-                        status: "SUCCESS",
-                        message: `Objekt ${name} je uspiješno Obrisan`,
-                        data: delResult
-                    });
-                }).catch(err => {
-                    res.json({
-                        status: "FAILED",
-                        message: "An error occured while trying to delete Facility!",
-                    })
-                })
-            } else {
+    name = name.toUpperCase();
+
+    Facility.find({ name }).then(result => {
+        if (result.length) {
+            Facility.deleteOne({ name }).then(delResult => {
+                res.json({
+                    status: "SUCCESS",
+                    message: `Objekt ${name} je uspiješno Obrisan`,
+                    data: delResult
+                });
+            }).catch(err => {
                 res.json({
                     status: "FAILED",
-                    message: `Objekt s imenom: ${name}, ne postoji u vasoj bazi podataka!`
-                });
-            }
-        }).catch(err => {
-            res.json({
-                status: "fAILED",
-                message: "An error occured while trying to find Facility to delete it!"
+                    message: "An error occured while trying to delete Facility!",
+                })
             })
+        } else {
+            res.json({
+                status: "FAILED",
+                message: `Objekt s imenom: ${name}, ne postoji u vasoj bazi podataka!`
+            });
+        }
+    }).catch(err => {
+        res.json({
+            status: "fAILED",
+            message: "An error occured while trying to find Facility to delete it!"
         })
-    }
+    })
 });
 
 
