@@ -139,7 +139,7 @@ router.post("/fromFacilityToServicer", (req, res) => {
             if (quantity > partResult.quantity) {
                 res.json({
                     status: "FAILED",
-                    message: `Objekt ${selectedFacility.name} nema toliku kolićinu proizvoda pod šifrom: ${productCode}, objekt ima: ${partResult.productName}-${partResult.quantity}!`
+                    message: `Objekt ${selectedFacility.name} nema toliku količinu proizvoda pod šifrom: ${productCode}, objekt ima: ${partResult.productName}-${partResult.quantity}!`
                 });
                 return;
             }
@@ -183,7 +183,7 @@ router.post("/fromFacilityToServicer", (req, res) => {
                         if (error) {
                             res.json({
                                 status: "FAILED",
-                                message: `An error occured while trying to increment Part to Facility`
+                                message: `An error occured while trying to increment Part to Servicer`
                             });
                             return;
                         }

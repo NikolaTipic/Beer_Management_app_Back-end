@@ -469,8 +469,8 @@ router.post("/fromServicerToCentral", (req, res) => {
             if (resultName.length) {
                 Servicer.find({ name, "parts.productCode": productCode }).then(resultpart => {
                     if (resultpart.length) {
-                        Servicer.find({name, "parts.productCode": productCode}, {"parts.$": 1}).then(result => {
-                            if(result[0].parts[0].quantity >= quantity) {
+                        Servicer.find({ name, "parts.productCode": productCode }, { "parts.$": 1 }).then(result => {
+                            if (result[0].parts[0].quantity >= quantity) {
                                 Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
                                     if (error) {
                                         res.json({
@@ -540,8 +540,8 @@ router.post("/fromServicerToExpense", (req, res) => {
             if (resultName.length) {
                 Servicer.find({ name, "parts.productCode": productCode }).then(resultpart => {
                     if (resultpart.length) {
-                        Servicer.find({name, "parts.productCode": productCode}, {"parts.$": 1}).then(result => {
-                            if(result[0].parts[0].quantity >= quantity) {
+                        Servicer.find({ name, "parts.productCode": productCode }, { "parts.$": 1 }).then(result => {
+                            if (result[0].parts[0].quantity >= quantity) {
                                 Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
                                     if (error) {
                                         res.json({
@@ -550,8 +550,8 @@ router.post("/fromServicerToExpense", (req, res) => {
                                         });
                                     }
                                     else {
-                                        Expense.find({productCode}).then(expenseResult => {
-                                            if(expenseResult.length) {
+                                        Expense.find({ productCode }).then(expenseResult => {
+                                            if (expenseResult.length) {
                                                 Expense.updateOne({ productCode }, { $inc: { quantity: quantity } }, { new: true }, (error, data) => {
                                                     if (error) {
                                                         res.json({
@@ -573,14 +573,14 @@ router.post("/fromServicerToExpense", (req, res) => {
                                                     quantity,
                                                     quantityUnit: result[0].parts[0].unit
                                                 })
-                    
+
                                                 newExpensePart.save().then(resultNewExpense => {
                                                     res.json({
                                                         status: "SUCCESS",
                                                         message: `Razdužili ste servisera: ${name}, te uspiješno dodali novi prizvod u rashod: ${result[0].parts[0].productName} +${quantity}${result[0].parts[0].unit}`,
                                                         data: resultNewExpense
                                                     })
-                    
+
                                                 })
                                                     .catch(err => {
                                                         res.json({
@@ -623,102 +623,195 @@ router.post("/fromServicerToExpense", (req, res) => {
 
 //fromServicerToFacility
 router.post("/fromServicerToFacility", (req, res) => {
-    let { name, facilityName, productCode, quantity } = req.body;
+    let { name, id, productCode, quantity } = req.body;
 
-    if (productCode == "" || quantity == "" || name == "" || facilityName == "") {
+    if (productCode == "" || quantity == "" || name == "" || id == "") {
         res.json({
             status: "FAILED",
             message: "Morate ispuniti sva polja!"
         });
-    } else {
-        //checking if servicer exist
-        facilityName = facilityName.toUpperCase();
-        
-        Servicer.find({ name }).then(resultName => {
-            if (resultName.length) {
-                Servicer.find({ name, "parts.productCode": productCode }).then(resultpart => {
-                    if (resultpart.length) {
-                        Facility.find({ name: facilityName }).then(facResult => {
-                            if(facResult.length) {
-                                Servicer.find({name, "parts.productCode": productCode}, {"parts.$": 1}).then(result => {
-                                    if(result[0].parts[0].quantity >= quantity) {
-                                        Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
-                                            if (error) {
-                                                res.json({
-                                                    status: "FAILED",
-                                                    message: `Error has occured while trying to remove part from Sericer ${name}, check your internet connection`
-                                                });
-                                            }
-                                            else {
-                                                Facility.find({ name: facilityName, "parts.productCode": productCode }).then(facPartResult => {
-                                                    if(facPartResult.length) {
-                                                        Facility.updateOne({ name: facilityName, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": quantity } }, { new: true }, (error, data) => {
-                                                            if (error) {
-                                                                res.json({
-                                                                    status: "FAILED",
-                                                                    message: `An error occured while trying to increment Part to Facility, check your internet connection!`
-                                                                });
-                                                            }
-                                                            else {
-                                                                res.json({
-                                                                    status: "SUCCESS",
-                                                                    message: `Uspiješno ste razdužili Servisera: ${name}: ${result[0].parts[0].productName} +${quantity} i dodali obijektu ${facilityName}`
-                                                                });
-                                                            }
-                                                        });
-                                                    }else {
-                                                        Facility.updateOne({ name: facilityName }, { $push: { parts: { productName: result[0].parts[0].productName, productCode, quantity, unit: result[0].parts[0].unit } } }, (error, data) => {
-                                                            if (error) {
-                                                                res.json({
-                                                                    status: "FAILED",
-                                                                    message: `An error occured while trying to add newPart to Facility, check your internet connection!`
-                                                                });
-                                                            }
-                                                            else {
-                                                                res.json({
-                                                                    status: "SUCCESS",
-                                                                    message: `Uspiješno ste razdužili Servisera: ${name}: ${result[0].parts[0].productName} +${quantity} i dodali obijektu novi proizvod ${facilityName}`
-                                                                });
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    } else {
-                                        res.json({
-                                            status: "FAILED",
-                                            message: `Serviser: ${name}, nema toliku kolicinu, ${name} ima: ${result[0].parts[0].quantity} - ${result[0].parts[0].productName}`
-                                        });
-                                    }
-                                });
-                            } else {
-                                res.json({
-                                    status: "FAILED",
-                                    message: `Objekt po imenom ${facilityName} ne postoji, molimo dodajte novi objekt u bazu podataka!`
-                                });
-                            }
-                        });
-                    } else {
-                        res.json({
-                            status: "FAILED",
-                            message: `Serviser: ${name} nema proizvod pod unesenom šifrom - ${productCode}`
-                        });
-                    }
-                });
-            } else {
+
+        return;
+    }
+
+    const fromServicerToFacility = async function () {
+        try {
+            const selectedServicer = await Servicer.findOne({ name });
+            if (!selectedServicer) {
                 res.json({
                     status: "FAILED",
-                    message: "Serviser pod unsenim imenom ne postoji u vasoj bazi podataka!"
+                    message: "Serviser pod unsenim imenom ne postoji u vašoj bazi podataka!"
                 });
+                return;
             }
-        }).catch(err => {
+
+            let partResult = selectedServicer.parts.find(item => item.productCode === productCode);
+            if (!partResult) {
+                res.json({
+                    status: "FAILED",
+                    message: `Serviser ${name} nema proizvod pod šifrom: ${productCode}!`
+                });
+                return;
+            }
+
+            if (quantity > partResult.quantity) {
+                res.json({
+                    status: "FAILED",
+                    message: `Serviser ${name} nema toliku količinu proizvoda pod šifrom: ${productCode}, serviser ima: ${partResult.productName}-${partResult.quantity}!`
+                });
+                return;
+            }
+
+            const selectedFacility = await Facility.findOne({ id });
+            if (!selectedFacility) {
+                res.json({
+                    status: "FAILED",
+                    message: `Objekt pod unesenim ID-em: ${id} ne postoji u vasoj bazi podataka`
+                });
+                return;
+            }
+
+            Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
+                if (error) {
+                    res.json({
+                        status: "FAILED",
+                        message: `An Error has occured while trying to remove part from Servicer`
+                    });
+                    return;
+                }
+
+                const facilityPartRes = selectedFacility.parts.find(item => item.productCode === productCode);
+                if (!facilityPartRes) {
+                    Facility.updateOne({ id }, { $push: { parts: { productName: partResult.productName, productCode, quantity, unit: partResult.unit } } }, (error, data) => {
+                        if (error) {
+                            res.json({
+                                status: "FAILED",
+                                message: `An error occured while trying to add newPart to Facility!`
+                            });
+                            return;
+                        }
+
+                        res.json({
+                            status: "SUCCESS",
+                            message: `Uspiješno ste razdužili servisera: ${name}: ${partResult.productName} -${quantity} i dodali novi proizvod Objektu ${selectedFacility.name}`
+                        });
+                    });
+                } else {
+                    Facility.updateOne({ id, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": quantity } }, { new: true }, (error, data) => {
+                        if (error) {
+                            res.json({
+                                status: "FAILED",
+                                message: `An error occured while trying to increment Part to Facility`
+                            });
+                            return;
+                        }
+                        res.json({
+                            status: "SUCCESS",
+                            message: `Uspiješno ste razdužili servisera: ${name}: ${partResult.productName} -${quantity} i dodali objektu ${selectedFacility.name}`
+                        });
+                    });
+                }
+            });
+
+        } catch (error) {
             res.json({
                 status: "FAILED",
-                message: "An error occured while trying to find servicer! "
-            })
-        });
+                message: "An error occured while trying to find Servicer! "
+            });
+        }
     }
+
+    fromServicerToFacility();
+
+
+
+    //checking if servicer exist
+
+    //         Servicer.find({ name }).then(resultName => {
+    //             if (resultName.length) {
+    //                 Servicer.find({ name, "parts.productCode": productCode }).then(resultpart => {
+    //                     if (resultpart.length) {
+    //                         Facility.find({ name: facilityName }).then(facResult => {
+    //                             if(facResult.length) {
+    //                                 Servicer.find({name, "parts.productCode": productCode}, {"parts.$": 1}).then(result => {
+    //                                     if(result[0].parts[0].quantity >= quantity) {
+    //                                         Servicer.updateOne({ name, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": -quantity } }, { new: true }, (error, data) => {
+    //                                             if (error) {
+    //                                                 res.json({
+    //                                                     status: "FAILED",
+    //                                                     message: `Error has occured while trying to remove part from Sericer ${name}, check your internet connection`
+    //                                                 });
+    //                                             }
+    //                                             else {
+    //                                                 Facility.find({ name: facilityName, "parts.productCode": productCode }).then(facPartResult => {
+    //                                                     if(facPartResult.length) {
+    //                                                         Facility.updateOne({ name: facilityName, "parts.productCode": productCode }, { $inc: { "parts.$.quantity": quantity } }, { new: true }, (error, data) => {
+    //                                                             if (error) {
+    //                                                                 res.json({
+    //                                                                     status: "FAILED",
+    //                                                                     message: `An error occured while trying to increment Part to Facility, check your internet connection!`
+    //                                                                 });
+    //                                                             }
+    //                                                             else {
+    //                                                                 res.json({
+    //                                                                     status: "SUCCESS",
+    //                                                                     message: `Uspiješno ste razdužili Servisera: ${name}: ${result[0].parts[0].productName} +${quantity} i dodali obijektu ${facilityName}`
+    //                                                                 });
+    //                                                             }
+    //                                                         });
+    //                                                     }else {
+    //                                                         Facility.updateOne({ name: facilityName }, { $push: { parts: { productName: result[0].parts[0].productName, productCode, quantity, unit: result[0].parts[0].unit } } }, (error, data) => {
+    //                                                             if (error) {
+    //                                                                 res.json({
+    //                                                                     status: "FAILED",
+    //                                                                     message: `An error occured while trying to add newPart to Facility, check your internet connection!`
+    //                                                                 });
+    //                                                             }
+    //                                                             else {
+    //                                                                 res.json({
+    //                                                                     status: "SUCCESS",
+    //                                                                     message: `Uspiješno ste razdužili Servisera: ${name}: ${result[0].parts[0].productName} +${quantity} i dodali obijektu novi proizvod ${facilityName}`
+    //                                                                 });
+    //                                                             }
+    //                                                         });
+    //                                                     }
+    //                                                 });
+    //                                             }
+    //                                         });
+    //                                     } else {
+    //                                         res.json({
+    //                                             status: "FAILED",
+    //                                             message: `Serviser: ${name}, nema toliku kolicinu, ${name} ima: ${result[0].parts[0].quantity} - ${result[0].parts[0].productName}`
+    //                                         });
+    //                                     }
+    //                                 });
+    //                             } else {
+    //                                 res.json({
+    //                                     status: "FAILED",
+    //                                     message: `Objekt po imenom ${facilityName} ne postoji, molimo dodajte novi objekt u bazu podataka!`
+    //                                 });
+    //                             }
+    //                         });
+    //                     } else {
+    //                         res.json({
+    //                             status: "FAILED",
+    //                             message: `Serviser: ${name} nema proizvod pod unesenom šifrom - ${productCode}`
+    //                         });
+    //                     }
+    //                 });
+    //             } else {
+    //                 res.json({
+    //                     status: "FAILED",
+    //                     message: "Serviser pod unsenim imenom ne postoji u vasoj bazi podataka!"
+    //                 });
+    //             }
+    //         }).catch(err => {
+    //             res.json({
+    //                 status: "FAILED",
+    //                 message: "An error occured while trying to find servicer! "
+    //             })
+    //         });
+
 });
 
 
