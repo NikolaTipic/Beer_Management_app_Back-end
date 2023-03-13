@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const DispenserSchema = new Schema({
-    warehouse: String,
+    status: String,
+    serialNum: String,
     invNumber: String,
     model: String,
     location: {
-        region: String,
         city: String,
         address: String
     },
