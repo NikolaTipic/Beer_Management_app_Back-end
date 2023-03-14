@@ -7,9 +7,9 @@ const Dispenser = require("../models/Dispenser");
 
 //addDispenser
 router.post("/addDispenser", (req, res) => {
-    let { status, serialNum, invNumber, model, dateOfLastSanitation, comment } = req.body;
+    let { serialNum, invNumber, model, comment } = req.body;
 
-    if (invNumber == "" || serialNum == "" || model == "" || dateOfLastSanitation == "") {
+    if (invNumber == "" || serialNum == "" || model == "") {
         res.json({
             status: "FAILED",
             message: "Morate ispuniti sva obavezna polja!"
@@ -18,7 +18,6 @@ router.post("/addDispenser", (req, res) => {
         return;
     }
 
-    status = status.toLowerCase();
     serialNum = serialNum.trim();
     serialNum = serialNum.toUpperCase();
     invNumber = invNumber.trim();
@@ -26,12 +25,12 @@ router.post("/addDispenser", (req, res) => {
     model = model.toUpperCase();
 
     //days to sanitation
-    const now = new Date;
-    const date2 = new Date(dateOfLastSanitation)
-    const timePassed = date.subtract(now, date2);
-    const daysPassed = timePassed.toDays();
-    const roundDp = Math.round(daysPassed);
-    const calcDaysToSanitation = 35 - roundDp;
+    // const now = new Date;
+    // const date2 = new Date(dateOfLastSanitation)
+    // const timePassed = date.subtract(now, date2);
+    // const daysPassed = timePassed.toDays();
+    // const roundDp = Math.round(daysPassed);
+    // const calcDaysToSanitation = 35 - roundDp;
 
     //checking if dispenser already exist
     Dispenser.find({ invNumber }).then(result => {
@@ -45,13 +44,12 @@ router.post("/addDispenser", (req, res) => {
         }
 
         newDispenser = new Dispenser({
-            status,
             serialNum,
             invNumber,
             model,
-            dateOfLastSanitation,
             comment,
-            dts: calcDaysToSanitation
+            status: "inactive"
+            ///dts: calcDaysToSanitation
         })
 
         newDispenser.save().then(result => {
