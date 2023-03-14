@@ -79,20 +79,21 @@ router.post("/addDispenser", (req, res) => {
 router.post("/findDispenser", (req, res) => {
     let { invNumber } = req.body;
 
-    Dispenser.find({ invNumber }).then(result => {
+    Dispenser.findOne({ invNumber }).then(result => {
         if (result.length) {
             res.json({
                 status: "SUCCESS",
                 message: "Dispenser retrived",
                 data: result
             });
+
+            return;
         }
-        else {
-            res.json({
-                status: "FAILED",
-                message: "No dispenser found"
-            })
-        }
+
+        res.json({
+            status: "FAILED",
+            message: `Nema točionika pod inventurnim brojem: ${invNumber}`
+        });
     }).catch(err => {
         console.log(err);
         res.json({
