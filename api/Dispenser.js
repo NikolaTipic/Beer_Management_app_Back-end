@@ -80,7 +80,7 @@ router.post("/findDispenser", (req, res) => {
     let { invNumber } = req.body;
 
     Dispenser.findOne({ invNumber }).then(result => {
-        if (result.length) {
+        if (result) {
             res.json({
                 status: "SUCCESS",
                 message: "Dispenser retrived",
