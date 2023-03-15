@@ -161,7 +161,7 @@ router.post("/dispenerfromCentralToServicer", (req, res) => {
                         Dispenser.deleteOne({ invNumber }).then(reusult => {
                             res.json({
                                 status: "SUCCESS",
-                                massage: `Serviseru: ${name}, ste uspiješno dodali točionik: ${invNumber}`
+                                message: `Serviseru: ${name}, ste uspiješno dodali točionik: ${invNumber}`
                             });
                         }).catch(err => {
                             res.json({
