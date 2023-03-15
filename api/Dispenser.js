@@ -4,6 +4,7 @@ const date = require("date-and-time")
 
 //mongo db dispenser model
 const Dispenser = require("../models/Dispenser");
+const Servicer = require("../models/Servicer");
 
 //addDispenser
 router.post("/addDispenser", (req, res) => {
@@ -99,7 +100,7 @@ router.post("/findDispenser", (req, res) => {
             message: "An error occured while retrving dispenser"
         })
     })
-})
+});
 
 //chech for dispensers that have less than 16 days to sanitation
 router.post("/checkForExpiredSanitation", (req, res) => {
@@ -125,6 +126,74 @@ router.post("/checkForExpiredSanitation", (req, res) => {
             message: "An error occured while retreving list of expired snitation dispensers!"
         })
     })
-})
+});
+
+
+
+//dispenerfromCentralToServicer
+router.post("/dispenerfromCentralToServicer", (req, res) => {
+    let { name, invNumber } = req.body;
+
+    if (invNumber == "" || name == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja!"
+        });
+
+        return;
+    }
+
+    //checking if dispenser exist
+    Dispenser.findOne({ invNumber }).then(dispenserResult => {
+        if (dispenserResult) {
+            Servicer.findOne({ name }).then(resultName => {
+                if (resultName) {
+                    Servicer.updateOne({name}, {$push: {dispensers: {serialNum: dispenserResult.serialNum, invNumber, model: dispenserResult.model, status: dispenserResult.status, comment: dispenserResult.comment, location: name }}}, (error, data) => {
+                        if(error) {
+                            res.json({
+                                status: "FAILED",
+                                message: "An error occured while trying to push dispenser to servicer"
+                            });
+
+                            return;
+                        }
+
+                        Dispenser.deleteOne({ invNumber }).then(reusult => {
+                            res.json({
+                                status: "SUCCESS",
+                                massage: `Serviseru: ${name}, ste uspiješno dodali točionik: ${invNumber}`
+                            });
+                        }).catch(err => {
+                            res.json({
+                                status: "FAILED",
+                                message: "An error occured while trying to delete the dispenser!"
+                            });
+                        })
+                    })
+
+                    return;
+                }
+
+                res.json({
+                    status: "FAILED",
+                    message: `Serviser imenom: ${name}, ne postoji u vasoj bazi podataka`
+                });
+            });
+
+            return;
+        }
+
+        //handling errors
+        res.json({
+            status: "FAILED",
+            message: `Točionik pod inventurnim brojem: ${invNumber}, ne postoji na vašem centralnom skladištu!`
+        });
+    }).catch(err => {
+        res.json({
+            status: "FAILED",
+            message: "An error occured while trying to find dispenser! "
+        })
+    });
+});
 
 module.exports = router;

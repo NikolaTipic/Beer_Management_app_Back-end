@@ -6,10 +6,7 @@ const DispenserSchema = new Schema({
     serialNum: String,
     invNumber: String,
     model: String,
-    location: {
-        city: String,
-        address: String
-    },
+    location: String,
     dateOfLastSanitation: Date,
     comment: String,
     dts: Number
