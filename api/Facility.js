@@ -207,4 +207,87 @@ router.post("/fromFacilityToServicer", (req, res) => {
 });
 
 
+//dispenserFromFacilityToServicer
+router.post("/dispenserFromFacilityToServicer", (req, res) => {
+    let { name, invNumber, id } = req.body;
+
+    if (invNumber == "" || name == "" || id == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja!"
+        });
+
+        return;
+    }
+
+    //checking if servicer exist
+    Facility.findOne({ id }).then(facilityRes => {
+        if (facilityRes) {
+
+            const dispenser = facilityRes.dispensers.find(item => item.invNumber === invNumber);
+            if (dispenser) {
+                Servicer.findOne({ name }).then(servResult => {
+                    if (servResult) {
+                        Servicer.updateOne({ name }, { $push: { dispensers: { serialNum: dispenser.serialNum, invNumber, model: dispenser.model, status: "inactive", comment: dispenser.comment, location: servResult.name } } }, (error, data) => {
+                            if (error) {
+                                res.json({
+                                    status: "FAILED",
+                                    message: "An error occured while pushing dispenser to servicer"
+                                });
+
+                                return;
+                            }
+
+                            Facility.updateOne({ id }, { $pull: { dispensers: { invNumber } } }).then(result => {
+                                res.json({
+                                    status: "SUCCESS",
+                                    message: `Uspiješno ste prebacili točionik: ${invNumber}, na servisera: ${servResult.name}, sa objekta: ${id}`
+                                });
+                            }).catch(err => {
+                                res.json({
+                                    status: "FAILED",
+                                    message: "An error occured while pulling dispenser from Facility collection"
+                                });
+                            });
+
+                        });
+
+                        return;
+                    }
+
+                    res.json({
+                        status: "FAILED",
+                        message: `Serviser: ${name}, ne postoji u vasoj bazi podataka`
+                    });
+                }).catch(err => {
+                    res.json({
+                        status: "FAILED",
+                        message: "An error occured while trying to find servicer! "
+                    })
+                });
+
+                return;
+            }
+
+            res.json({
+                status: "FAILED",
+                message: `Objekt: ${id}, nema točionik pod inventrunim brojem: ${invNumber}!`
+            });
+
+            return;
+        }
+
+        //handling errors
+        res.json({
+            status: "FAILED",
+            message: `Objekt: ${id}, ne postoji u vašoj bazi podataka!`
+        });
+    }).catch(err => {
+        res.json({
+            status: "FAILED",
+            message: "An error occured while trying to find Facility! "
+        })
+    });
+});
+
 module.exports = router;

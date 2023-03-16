@@ -1,5 +1,5 @@
 //mongo
-require("./config/db")
+require("./config/db");
 //cors
 const cors = require("cors");
 
