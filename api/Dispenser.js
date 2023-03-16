@@ -47,14 +47,14 @@ router.post("/addDispenser", (req, res) => {
                     console.log(servResult);
                     res.json({
                         status: "FAILED",
-                        message: `Točionik s unsenim inventurnim brojem već postoji kod serivsera: ${servResult.dispensers[0].location}!`
+                        message: `Točionik s unsenim inventurnim brojem već se nalazi kod serivsera: ${servResult.dispensers[0].location}!`
                     });
                 } else {
                     Facility.findOne({ "dispensers.invNumber": invNumber }, { "dispensers.$": 1 }).then(facilityRes => {
                         if (facilityRes) {
                             res.json({
                                 status: "FAILED",
-                                message: `Točionik s unsenim inventurnim brojem već postoji kod Objekta: ${facilityRes.dispensers[0].location}!`
+                                message: `Točionik s unsenim inventurnim brojem već se nalazi u Objekta: ${facilityRes.dispensers[0].location}!`
                             });
 
                             return;
