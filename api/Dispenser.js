@@ -39,34 +39,54 @@ router.post("/addDispenser", (req, res) => {
         if (result.length) {
             res.json({
                 status: "FAILED",
-                message: "Točionik s unsenim inventurnim brojem već postoji!"
+                message: "Točionik s unsenim inventurnim brojem već postoji u centralnom skladištu!"
+            });
+        } else {
+            Servicer.findOne({ "dispensers.invNumber": invNumber }, { "dispensers.$": 1 }).then(servResult => {
+                if (servResult) {
+                    console.log(servResult);
+                    res.json({
+                        status: "FAILED",
+                        message: `Točionik s unsenim inventurnim brojem već postoji kod serivsera: ${servResult.dispensers[0].location}!`
+                    });
+                } else {
+                    Facility.findOne({ "dispensers.invNumber": invNumber }, { "dispensers.$": 1 }).then(facilityRes => {
+                        if (facilityRes) {
+                            res.json({
+                                status: "FAILED",
+                                message: `Točionik s unsenim inventurnim brojem već postoji kod Objekta: ${facilityRes.dispensers[0].location}!`
+                            });
+
+                            return;
+                        }
+
+                        newDispenser = new Dispenser({
+                            serialNum,
+                            invNumber,
+                            model,
+                            comment,
+                            status: "inactive"
+                            ///dts: calcDaysToSanitation
+                        })
+
+                        newDispenser.save().then(result => {
+                            res.json({
+                                status: "SUCCESS",
+                                message: "Točionik dodan",
+                                data: result,
+                            })
+
+                        }).catch(err => {
+                            res.json({
+                                status: "FAILED",
+                                message: "An error occurred while saving dispenser!"
+                            })
+                        });
+                    });
+                }
             });
 
-            return;
         }
-
-        newDispenser = new Dispenser({
-            serialNum,
-            invNumber,
-            model,
-            comment,
-            status: "inactive"
-            ///dts: calcDaysToSanitation
-        })
-
-        newDispenser.save().then(result => {
-            res.json({
-                status: "SUCCESS",
-                message: "Točionik dodan",
-                data: result,
-            })
-
-        }).catch(err => {
-            res.json({
-                status: "FAILED",
-                message: "An error occurred while saving dispenser!"
-            })
-        });
     }).catch(err => {
         res.json({
             status: "FAILED",
@@ -211,7 +231,7 @@ router.post("/dispenserFromServicerToFacility", (req, res) => {
         return;
     }
 
-    //checking if dispenser exist
+    //checking if servicer exist
     Servicer.findOne({ name }).then(servResult => {
         if (servResult) {
             const dispenser = servResult.dispensers.find(item => item.invNumber === invNumber);
@@ -219,8 +239,8 @@ router.post("/dispenserFromServicerToFacility", (req, res) => {
             if (dispenser) {
                 Facility.findOne({ id }).then(facilityRes => {
                     if (facilityRes) {
-                        Facility.updateOne({id}, {$push: {dispensers: {serialNum: dispenser.serialNum, invNumber, model: dispenser.model, status, comment: dispenser.comment, location: facilityRes.name}}}, (error, data) => {
-                            if(error) {
+                        Facility.updateOne({ id }, { $push: { dispensers: { serialNum: dispenser.serialNum, invNumber, model: dispenser.model, status, comment: dispenser.comment, location: facilityRes.name } } }, (error, data) => {
+                            if (error) {
                                 res.json({
                                     status: "FAILED",
                                     message: "An error occured while pushing dispenser to Facility"
@@ -229,7 +249,7 @@ router.post("/dispenserFromServicerToFacility", (req, res) => {
                                 return;
                             }
 
-                            Servicer.updateOne({name}, {$pull: {dispensers: {invNumber}}}).then(result => {
+                            Servicer.updateOne({ name }, { $pull: { dispensers: { invNumber } } }).then(result => {
                                 res.json({
                                     status: "SUCCESS",
                                     message: `Uspiješno ste prebacili točionik: ${invNumber}, na obijekt: ${facilityRes.name}, sa servisera: ${name}`
@@ -267,7 +287,7 @@ router.post("/dispenserFromServicerToFacility", (req, res) => {
 
             return;
         }
-        
+
         //handling errors
         res.json({
             status: "FAILED",
