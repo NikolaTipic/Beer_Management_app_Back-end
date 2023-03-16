@@ -5,6 +5,7 @@ const date = require("date-and-time")
 //mongo db dispenser model
 const Dispenser = require("../models/Dispenser");
 const Servicer = require("../models/Servicer");
+const Facility = require("../models/Facility");
 
 //addDispenser
 router.post("/addDispenser", (req, res) => {
@@ -148,8 +149,8 @@ router.post("/dispenerfromCentralToServicer", (req, res) => {
         if (dispenserResult) {
             Servicer.findOne({ name }).then(resultName => {
                 if (resultName) {
-                    Servicer.updateOne({name}, {$push: {dispensers: {serialNum: dispenserResult.serialNum, invNumber, model: dispenserResult.model, status: dispenserResult.status, comment: dispenserResult.comment, location: name }}}, (error, data) => {
-                        if(error) {
+                    Servicer.updateOne({ name }, { $push: { dispensers: { serialNum: dispenserResult.serialNum, invNumber, model: dispenserResult.model, status: dispenserResult.status, comment: dispenserResult.comment, location: name } } }, (error, data) => {
+                        if (error) {
                             res.json({
                                 status: "FAILED",
                                 message: "An error occured while trying to push dispenser to servicer"
@@ -187,6 +188,90 @@ router.post("/dispenerfromCentralToServicer", (req, res) => {
         res.json({
             status: "FAILED",
             message: `Točionik pod inventurnim brojem: ${invNumber}, ne postoji na vašem centralnom skladištu!`
+        });
+    }).catch(err => {
+        res.json({
+            status: "FAILED",
+            message: "An error occured while trying to find dispenser! "
+        })
+    });
+});
+
+
+//dispenserFromServicerToFacility
+router.post("/dispenserFromServicerToFacility", (req, res) => {
+    let { name, invNumber, id, status } = req.body;
+
+    if (invNumber == "" || name == "" || id == "" || status == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja!"
+        });
+
+        return;
+    }
+
+    //checking if dispenser exist
+    Servicer.findOne({ name }).then(servResult => {
+        if (servResult) {
+            const dispenser = servResult.dispensers.find(item => item.invNumber === invNumber);
+
+            if (dispenser) {
+                Facility.findOne({ id }).then(facilityRes => {
+                    if (facilityRes) {
+                        Facility.updateOne({id}, {$push: {dispensers: {serialNum: dispenser.serialNum, invNumber, model: dispenser.model, status, comment: dispenser.comment, location: facilityRes.name}}}, (error, data) => {
+                            if(error) {
+                                res.json({
+                                    status: "FAILED",
+                                    message: "An error occured while pushing dispenser to Facility"
+                                });
+
+                                return;
+                            }
+
+                            Servicer.updateOne({name}, {$pull: {dispensers: {invNumber}}}).then(result => {
+                                res.json({
+                                    status: "SUCCESS",
+                                    message: `Uspiješno ste prebacili točionik: ${invNumber}, na obijekt: ${facilityRes.name}, sa servisera: ${name}`
+                                });
+                            }).catch(err => {
+                                res.json({
+                                    status: "FAILED",
+                                    message: "An error occured while deleteing dispenser in Servicer db"
+                                });
+                            });
+
+                        });
+
+                        return;
+                    }
+
+                    res.json({
+                        status: "FAILED",
+                        message: `Obijekt s ID-em: ${id}, ne postoji u vasoj bazi podataka`
+                    });
+                }).catch(err => {
+                    res.json({
+                        status: "FAILED",
+                        message: "An error occured while trying to find Facility! "
+                    })
+                });
+
+                return;
+            }
+
+            res.json({
+                status: "FAILED",
+                message: `Serviser: ${name}, nema točionik pod inventrunim brojem: ${invNumber}!`
+            });
+
+            return;
+        }
+        
+        //handling errors
+        res.json({
+            status: "FAILED",
+            message: `Serviser: ${name}, ne postoji u vašoj bazi podataka!`
         });
     }).catch(err => {
         res.json({
