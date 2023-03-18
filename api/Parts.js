@@ -572,7 +572,7 @@ router.post("/fromServicerToExpense", (req, res) => {
                                                     productCode,
                                                     quantity,
                                                     quantityUnit: result[0].parts[0].unit
-                                                })
+                                                });
 
                                                 newExpensePart.save().then(resultNewExpense => {
                                                     res.json({
