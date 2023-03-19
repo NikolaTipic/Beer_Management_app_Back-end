@@ -133,20 +133,50 @@ router.post("/findDispenser", (req, res) => {
 
                     return;
                 }
-                
+
+                DispenserExpense.findOne({ invNumber }).then(expDisResult => {
+                    if(expDisResult) {
+                        res.json({
+                            status: "SUCCESS",
+                            message: "Dispenser retrived",
+                            data: expDisResult
+                        });
+    
+                        return;
+                    }
+
+                    res.json({
+                        status: "FAILED",
+                        message: `Nema točionika pod inventurnim brojem: ${invNumber}`
+                    });
+                }).catch(err => {
+                    console.log(err);
+                    res.json({
+                        status: "FAILED",
+                        message: "An error occured while retrving expense dispenser"
+                    });
+                });
+            }).catch(err => {
+                console.log(err);
                 res.json({
                     status: "FAILED",
-                    message: `Nema točionika pod inventurnim brojem: ${invNumber}`
+                    message: "An error occured while retrving facility dispenser"
                 });
-            })
+            });
+        }).catch(err => {
+            console.log(err);
+            res.json({
+                status: "FAILED",
+                message: "An error occured while retrving servicer dispenser"
+            });
         });
     }).catch(err => {
         console.log(err);
         res.json({
             status: "FAILED",
             message: "An error occured while retrving dispenser"
-        })
-    })
+        });
+    });
 });
 
 //chech for dispensers that have less than 16 days to sanitation
