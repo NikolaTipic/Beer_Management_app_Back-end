@@ -373,7 +373,82 @@ router.post("/dispenserFromServicerToExpense", (req, res) => {
     }).catch(err => {
         res.json({
             status: "FAILED",
-            message: "An error occured while trying to find dispenser! "
+            message: "An error occured while trying to find servicer! "
+        });
+    });
+});
+
+
+
+//dispenserFromServicerToCentral
+router.post("/dispenserFromServicerToCentral", (req, res) => {
+    let { name, invNumber } = req.body;
+
+    if (invNumber == "" || name == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja!"
+        });
+
+        return;
+    }
+
+    //checking if servicer exist
+    Servicer.findOne({ name }).then(servResult => {
+        if (servResult) {
+            const dispenser = servResult.dispensers.find(item => item.invNumber === invNumber);
+
+            if (dispenser) {
+
+                const newDispenserCentral = new Dispenser({
+                    status: "inactive",
+                    serialNum: dispenser.serialNum,
+                    invNumber: dispenser.invNumber,
+                    model: dispenser.model,
+                    location: "Centralno skladište",
+                    comment: dispenser.comment
+                });
+
+                newDispenserCentral.save().then(newDispenserResult => {
+                    Servicer.updateOne({ name }, { $pull: { dispensers: { invNumber } } }).then(result => {
+                        res.json({
+                            status: "SUCCESS",
+                            message: `Uspiješno ste prebacili točionik: ${dispenser.invNumber}, na centralno skladište, sa servisera: ${name}`,
+                            data: newDispenserResult
+                        });
+                    }).catch(err => {
+                        res.json({
+                            status: "FAILED",
+                            message: "An error occured while deleteing dispenser in Servicer db"
+                        });
+                    });
+                }).catch(err => {
+                    res.json({
+                        status: "FAILED",
+                        message: "An error occured while trying to save dispenser! "
+                    });
+                });
+
+                return;
+            }
+
+            res.json({
+                status: "FAILED",
+                message: `Serviser: ${name}, nema točionik pod inventrunim brojem: ${invNumber}!`
+            });
+
+            return;
+        }
+
+        //handling errors
+        res.json({
+            status: "FAILED",
+            message: `Serviser: ${name}, ne postoji u vašoj bazi podataka!`
+        });
+    }).catch(err => {
+        res.json({
+            status: "FAILED",
+            message: "An error occured while trying to find servicer! "
         });
     });
 });
