@@ -102,6 +102,45 @@ router.post("/deleteFacility", (req, res) => {
 });
 
 
+//getFacilities
+router.post("/getFacilities", (req, res) => {
+    let {name} = req.body;
+
+    if(name == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate unijeti ime obijekta pod vašom nadležnosti!"
+        });
+
+        return;
+    }
+
+    name = name.toUpperCase();
+
+    Facility.find({ name }).then(result => {
+        if (result.length) {
+            res.json({
+                status: "SUCCESS",
+                message: `Objekt ${name}, uspiješno pronađen!`,
+                data: result
+            });
+        }
+        else {
+            res.json({
+                status: "FAILED",
+                message: `Objekt ${name}, nemate u vašoj bazi podataka objekata pod vašom nadležnosti`
+            })
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error occured while retreving expense inventory list!"
+        })
+    })
+});
+
+
 //fromFacilityToServicer
 router.post("/fromFacilityToServicer", (req, res) => {
     let { name, id, productCode, quantity } = req.body;
