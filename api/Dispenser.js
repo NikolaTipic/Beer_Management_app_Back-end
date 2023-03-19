@@ -112,9 +112,33 @@ router.post("/findDispenser", (req, res) => {
             return;
         }
 
-        res.json({
-            status: "FAILED",
-            message: `Nema točionika pod inventurnim brojem: ${invNumber}`
+        Servicer.findOne({"dispensers.invNumber": invNumber}, {"dispensers.$": 1}).then(servDisResult => {
+            if(servDisResult) {
+                res.json({
+                    status: "SUCCESS",
+                    message: "Dispenser retrived",
+                    data: servDisResult.dispensers[0]
+                });
+
+                return;
+            }
+
+            Facility.findOne({"dispensers.invNumber": invNumber}, {"dispensers.$": 1}).then(facDisResult => {
+                if(facDisResult) {
+                    res.json({
+                        status: "SUCCESS",
+                        message: "Dispenser retrived",
+                        data: facDisResult.dispensers[0]
+                    });
+
+                    return;
+                }
+                
+                res.json({
+                    status: "FAILED",
+                    message: `Nema točionika pod inventurnim brojem: ${invNumber}`
+                });
+            })
         });
     }).catch(err => {
         console.log(err);
