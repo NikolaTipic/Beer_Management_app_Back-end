@@ -16,7 +16,8 @@ router.get("/exportFacilityXlsx", (req, res) => {
             { header: "ID Objekta", key: "id", width: 25 },
             { header: "Naziv mjesta", key: "city", width: 25 },
             { header: "Adresa", key: "address", width: 25 },
-            { header: "Točionici", key: "dispensers", width: 75 }
+            { header: "Točionici", key: "dispensers", width: 75 },
+            { header: "Djelovi", key: "parts", width: 50 }
         ];
 
 
@@ -27,7 +28,8 @@ router.get("/exportFacilityXlsx", (req, res) => {
                 id: facility.id,
                 city: facility.location.city,
                 address: facility.location.address,
-                dispensers: facility.dispensers.map(dis => { return dis.invNumber})
+                dispensers: facility.dispensers.map((dis, index) => { return `Točionik ${index+1}:  ${dis.invNumber} - ${dis.status}`}),
+                parts: facility.parts.map((part, index) => {return `${part.productName}: ${part.quantity}${part.unit}`})
             });
         });
 
@@ -37,7 +39,7 @@ router.get("/exportFacilityXlsx", (req, res) => {
         );
         res.setHeader(
             "Content-Disposition",
-            "attachment;filename" + "objekti.xlsx"
+            "attachment;filename=" + "objekti.xlsx"
         );
 
         workbook.xlsx.write(res);
