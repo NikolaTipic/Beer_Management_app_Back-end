@@ -14,7 +14,7 @@ const Expense = require("../models/Expense");
 
 
 router.get("/exportFacilityXlsx", (req, res) => {
-    Facility.find({}).then( result => {
+    Facility.find({}).then(result => {
         let workbook = new excelJs.Workbook();
 
         const sheet = workbook.addWorksheet("objekti");
@@ -35,8 +35,8 @@ router.get("/exportFacilityXlsx", (req, res) => {
                 name: facility.name,
                 address: facility.location.address,
                 city: facility.location.city,
-                dispensers: facility.dispensers.map((dis, index) => { return `Točionik ${index+1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}`}),
-                parts: facility.parts.map((part, index) => {return `${part.productName}: ${part.quantity}${part.unit}`})
+                dispensers: facility.dispensers.map((dis, index) => { return `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}` }),
+                parts: facility.parts.map((part, index) => { return `${part.productName}: ${part.quantity}${part.unit}` })
             });
         });
 
@@ -110,7 +110,7 @@ router.get("/exportFacilityXlsx", (req, res) => {
 
 
 router.get("/exportFacilityReportXlsx", (req, res) => {
-    Facility.find({"dispensers.status": "active"}).then( result => {
+    Facility.find({ "dispensers.status": "active" }).then(result => {
         let workbook = new excelJs.Workbook();
 
         const sheet = workbook.addWorksheet("objekti_izvijesce");
@@ -130,11 +130,7 @@ router.get("/exportFacilityReportXlsx", (req, res) => {
                 name: facility.name,
                 address: facility.location.address,
                 city: facility.location.city,
-                dispensers: facility.dispensers.map((dis, index) => { 
-                    if(dis.status === "active") {
-                        return `Točionik ${index+1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}`
-                    }
-                })
+                dispensers: facility.dispensers.filter((dis) => { return dis.status === "active" }).map((dis, index) => `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}`)
             });
         });
 
@@ -197,7 +193,7 @@ router.get("/exportFacilityReportXlsx", (req, res) => {
 
 
 router.get("/exportDispensersCentralXlsx", (req, res) => {
-    Dispenser.find({}).then( result => {
+    Dispenser.find({}).then(result => {
         let workbook = new excelJs.Workbook();
 
         const sheet = workbook.addWorksheet("tocionici_centralno");
@@ -273,7 +269,7 @@ router.get("/exportDispensersCentralXlsx", (req, res) => {
 
 
 router.get("/exportDispensersExpenseXlsx", (req, res) => {
-    DispenserExpense.find({}).then( result => {
+    DispenserExpense.find({}).then(result => {
         let workbook = new excelJs.Workbook();
 
         const sheet = workbook.addWorksheet("tocionici_rashod");
@@ -349,7 +345,7 @@ router.get("/exportDispensersExpenseXlsx", (req, res) => {
 
 
 router.get("/exportPartsXlsx", (req, res) => {
-    Part.find({quantity: {$gt: 0}}).then( result => {
+    Part.find({ quantity: { $gt: 0 } }).then(result => {
         let workbook = new excelJs.Workbook();
 
         const sheet = workbook.addWorksheet("djelovi_centralno");
@@ -425,7 +421,7 @@ router.get("/exportPartsXlsx", (req, res) => {
 
 
 router.get("/exportPartsExpenseXlsx", (req, res) => {
-    Expense.find({}).then( result => {
+    Expense.find({}).then(result => {
         let workbook = new excelJs.Workbook();
 
         const sheet = workbook.addWorksheet("djelovi_rashod");
