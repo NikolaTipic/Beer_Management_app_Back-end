@@ -35,8 +35,13 @@ router.get("/exportFacilityXlsx", (req, res) => {
                 name: facility.name,
                 address: facility.location.address,
                 city: facility.location.city,
-                dispensers: facility.dispensers.map((dis, index) => { return `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}` }),
-                parts: facility.parts.map((part, index) => { return `${part.productName}: ${part.quantity}${part.unit}` })
+                dispensers: facility.dispensers
+                    .filter((dis) => { return dis.status === "active" })
+                    .map((dis, index) => `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}  `)
+                    .join(","),
+                parts: facility.parts
+                    .map((part, index) => { return `${part.productName}: ${part.quantity}${part.unit}  ` })
+                    .join(",")
             });
         });
 
@@ -130,7 +135,10 @@ router.get("/exportFacilityReportXlsx", (req, res) => {
                 name: facility.name,
                 address: facility.location.address,
                 city: facility.location.city,
-                dispensers: facility.dispensers.filter((dis) => { return dis.status === "active" }).map((dis, index) => `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}`)
+                dispensers: facility.dispensers
+                    .filter((dis) => { return dis.status === "active" })
+                    .map((dis, index) => `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}  `)
+                    .join(",")
             });
         });
 
