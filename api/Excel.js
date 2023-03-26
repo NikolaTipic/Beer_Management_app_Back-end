@@ -421,7 +421,7 @@ router.get("/exportPartsXlsx", (req, res) => {
 
 
 router.get("/exportPartsExpenseXlsx", (req, res) => {
-    Expense.find({}).then(result => {
+    Expense.find({ quantity: { $gt: 0 } }).then(result => {
         let workbook = new excelJs.Workbook();
 
         const sheet = workbook.addWorksheet("djelovi_rashod");
