@@ -7,7 +7,7 @@ const DispenserExpensesSchema = new Schema({
     invNumber: String,
     model: String,
     location: String,
-    comment: String
+    comment: []
 });
 
 const DispenserExpense = mongoose.model("Dispenser_Expense", DispenserExpensesSchema);
