@@ -8,7 +8,7 @@ const DispenserSchema = new Schema({
     model: String,
     location: String,
     dateOfLastSanitation: Date,
-    comment: String,
+    comment: [],
     dts: Number
 });
 
