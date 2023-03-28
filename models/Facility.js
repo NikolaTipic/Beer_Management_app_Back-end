@@ -15,7 +15,7 @@ const FacilitySchema = new Schema({
         city: String,
         address: String
     },
-    comment: String,
+    comment: []
 });
 
 const Facility = mongoose.model("Facility", FacilitySchema);

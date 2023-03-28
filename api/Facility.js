@@ -8,12 +8,15 @@ const Servicer = require("../models/Servicer");
 //addFacility
 router.post("/addFacility", (req, res) => {
     let { id, name, location, comment } = req.body;
+    let { city, address } = location;
 
-    if ( id === "" || name == "" || location == "") {
+
+    if ( id === "" || name == "" || city == "" || address == "") {
         res.json({
             status: "FAILED",
             message: "Morate navesti ime objekta i lokaciju!"
-        })
+        });
+
         return;
     }
 
@@ -26,7 +29,8 @@ router.post("/addFacility", (req, res) => {
             res.json({
                 status: "FAILED",
                 message: `Objekt s navedenim ID-objekta :${id}, već postoji`
-            })
+            });
+
             return;
         }
 
@@ -41,18 +45,19 @@ router.post("/addFacility", (req, res) => {
         newFacility.save().then(result => {
             res.json({
                 status: "SUCCESS",
-                message: `Uspiješno ste dodali novi objekt: ${name}, na adresi: ${location.address}`,
+                message: `Uspiješno ste dodali novi objekt: ${name}, na adresi: ${address}`,
                 data: result,
             })
 
         }).catch(err => {
+            console.log(err);
             res.json({
                 status: "FAILED",
-                message: "An error occurred while adding new Facility!"
+                message: "An error occurred while saving new Facility!"
             })
         });
     }).catch(err => {
-        console.log(err)
+        console.log(err);
         res.json({
             status: "FAILED",
             message: "An error occured while trying to find Facility! "

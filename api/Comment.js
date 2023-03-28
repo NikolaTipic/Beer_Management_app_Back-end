@@ -88,4 +88,43 @@ router.post("/addCommentToDispenser", (req, res) => {
     });
 });
 
+//addCommentToFacility
+router.post("/addCommentToFacility", (req, res) => {
+    let { comment, id } = req.body;
+
+    if (comment == "" || id == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja!"
+        });
+
+        return;
+    }
+
+    Facility.updateOne({id}, {$push: {comment}}, (err, data) => {
+        if (err) {
+            res.json({
+                status: "FAILED",
+                message: "An error occured while trying to update comment in the Facility"
+            });
+
+            return;
+        }
+
+        if (data.matchedCount === 1) {
+            res.json({
+                status: "SUCCESS",
+                message: `Komentar uspiješno dodan na objekt, pod ID-em: ${id}`
+            });
+
+            return;
+        }
+
+        res.json({
+            status: "FAILED",
+            message: `ID-Objekta: ${id}, ne postoji u vašoj bazi podataka!`
+        });        
+    });
+});
+
 module.exports = router;
