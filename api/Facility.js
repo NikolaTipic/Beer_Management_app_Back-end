@@ -336,7 +336,7 @@ router.post("/dispenserFromFacilityToServicer", (req, res) => {
 
 
 //AddDateOfLastSanitation
-router.post("/AddDateOfLastSanitation", (req, res) => {
+router.post("/addDateOfLastSanitation", (req, res) => {
     let { dateOfLastSanitation, invNumber } = req.body;
 
     if (dateOfLastSanitation == "" || invNumber == "") {
