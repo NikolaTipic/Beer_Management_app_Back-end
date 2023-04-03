@@ -335,7 +335,7 @@ router.post("/dispenserFromFacilityToServicer", (req, res) => {
 });
 
 
-//AddDateOfLastSanitation
+//addDateOfLastSanitation
 router.post("/addDateOfLastSanitation", (req, res) => {
     let { dateOfLastSanitation, invNumber } = req.body;
 
@@ -351,7 +351,7 @@ router.post("/addDateOfLastSanitation", (req, res) => {
     invNumber = invNumber.trim();
     invNumber = invNumber.toUpperCase();
 
-    Facility.updateOne({ "dispensers.invNumber": invNumber }, { $set: { "dispensers.$.dols": new Date(dateOfLastSanitation) } }, (err, data) => {
+    Facility.updateOne({ "dispensers.invNumber": invNumber }, { $set: { "dispensers.$.dols": dateOfLastSanitation } }, (err, data) => {
         if (err) {
             console.log(err);
             res.json({
