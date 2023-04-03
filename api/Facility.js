@@ -11,7 +11,7 @@ router.post("/addFacility", (req, res) => {
     let { city, address } = location;
 
 
-    if ( id === "" || name == "" || city == "" || address == "") {
+    if (id === "" || name == "" || city == "" || address == "") {
         res.json({
             status: "FAILED",
             message: "Morate navesti ime objekta i lokaciju!"
@@ -109,9 +109,9 @@ router.post("/deleteFacility", (req, res) => {
 
 //getFacilities
 router.post("/getFacilities", (req, res) => {
-    let {name} = req.body;
+    let { name } = req.body;
 
-    if(name == "") {
+    if (name == "") {
         res.json({
             status: "FAILED",
             message: "Morate unijeti ime obijekta pod vašom nadležnosti!"
@@ -333,5 +333,69 @@ router.post("/dispenserFromFacilityToServicer", (req, res) => {
         })
     });
 });
+
+
+//AddDateOfLastSanitation
+router.post("/AddDateOfLastSanitation", (req, res) => {
+    let { dateOfLastSanitation, invNumber } = req.body;
+
+    if (dateOfLastSanitation == "" || invNumber == "") {
+        res.json({
+            status: "FAILED",
+            message: "Morate ispuniti sva polja! "
+        });
+
+        return;
+    }
+
+    invNumber = invNumber.trim();
+    invNumber = invNumber.toUpperCase();
+
+    Facility.updateOne({ "dispensers.invNumber": invNumber }, { $set: { "dispensers.$.dols": new Date(dateOfLastSanitation) } }, (err, data) => {
+        if (err) {
+            console.log(err);
+            res.json({
+                status: FAILED,
+                message: "An error has occured while trying to set dateOfLastSanitation"
+            });
+
+            return;
+        }
+
+        if (data.matchedCount === 1) {
+            if (data.modifiedCount === 1) {
+                res.json({
+                    status: "SUCCESS",
+                    message: `Sanitacija je potvrđena, dana: ${new Date(dateOfLastSanitation).toDateString()} - ${invNumber}`
+                });
+
+                Facility.updateOne({ "dispensers.invNumber": invNumber }, {$set: {"dispensers.$.status" : "active"}}, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                        res.json({
+                            status: FAILED,
+                            message: "An error has occured while trying to set status to active"
+                        });
+            
+                        return;
+                    }
+                });
+            } else {
+                res.json({
+                    status: "FAILED",
+                    message: `Sanitacija je vec napravljena pod tim datumom, na inventurni broj: ${invNumber} !`
+                })
+            }
+
+            return;
+        }
+
+        res.json({
+            status: "FAILED",
+            message: `Točionik pod inventurnim brojem: ${invNumber}, ne pripada ni jedom objektu pod vašom nadležnosti!`
+        });
+    });
+});
+
 
 module.exports = router;

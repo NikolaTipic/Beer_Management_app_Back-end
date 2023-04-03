@@ -17,16 +17,19 @@ router.get("/exportFacilityXlsx", (req, res) => {
     Facility.find({}).then(result => {
         let workbook = new excelJs.Workbook();
 
-        const sheet = workbook.addWorksheet("objekti");
+        const sheet = workbook.addWorksheet("tjedno_izviješće");
         sheet.columns = [
             { header: "ID Objekta", key: "id", width: 25 },
             { header: "Naziv Objekta", key: "name", width: 25 },
             { header: "Adresa", key: "address", width: 25 },
             { header: "Naziv mjesta", key: "city", width: 25 },
             { header: "Točionici", key: "dispensers", width: 75 },
-            { header: "Djelovi", key: "parts", width: 50 }
+            { header: "Serijski broj", key: "serialNum", width: 60 },
+            { header: "Konzole", key: "console", width: 50 },
+            //{ header: "Datum zadnje sanitacije", width: 25 }
+            { header: "Djelovi", key: "parts", width: 60 },
+            { header: "Komentari", key: "comment", width: 60 }
         ];
-
 
 
         result.map((facility, index) => {
@@ -35,8 +38,24 @@ router.get("/exportFacilityXlsx", (req, res) => {
                 name: facility.name,
                 address: facility.location.address,
                 city: facility.location.city,
-                dispensers: facility.dispensers.map((dis, index) => { return `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}` }).join(",  "),
-                parts: facility.parts.map((part, index) => { return `${part.productName}:  ${part.quantity}${part.unit}` }).join(",  ")
+                dispensers: facility.dispensers
+                    .map((dis, index) => { return `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}` }).join(",  "),
+                serialNum: facility.dispensers
+                    .map((dis, index) => `Točionik ${index + 1}: ${dis.serialNum}`)
+                    .join(",  "),
+                console: facility.parts
+                    .filter(part => { return part.productName.includes("Konzola"); })
+                    .map(part => `${part.productName}:  ${part.quantity}${part.unit}`)
+                    .join(",  "),
+                // dols: facility.dispensers
+                //     .filter((dis) => { return dis.status === "active" })
+                //     .map((dis, index) => `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}`)
+                //     .join(",  "),
+                parts: facility.parts
+                    .filter(part => { return !part.productName.includes("Konzola"); })
+                    .map(part => `${part.productName}:  ${part.quantity}${part.unit}`)
+                    .join(",  "),
+                comment: facility.comment.map(comment => `- ${comment}`).join(",  ")
             });
         });
 
@@ -67,9 +86,9 @@ router.get("/exportFacilityXlsx", (req, res) => {
             const mail_configs = {
                 from: "tipicnikola@gmail.com",
                 to: "tipic.n@outlook.com",
-                subject: "Izvoz Objekata",
+                subject: "Izvoz Objekata, tjedno izviješće",
                 attachments: [{
-                    filename: "Izvoz_Objekata.xlsx",
+                    filename: "Izvoz_Objekata_tjedno_izviješće.xlsx",
                     content: buffer
                 }]
             };
@@ -113,13 +132,18 @@ router.get("/exportFacilityReportXlsx", (req, res) => {
     Facility.find({ "dispensers.status": "active" }).then(result => {
         let workbook = new excelJs.Workbook();
 
-        const sheet = workbook.addWorksheet("objekti_izvijesce");
+        const sheet = workbook.addWorksheet("dnevno_izviješće");
         sheet.columns = [
             { header: "ID Objekta", key: "id", width: 25 },
             { header: "Naziv Objekta", key: "name", width: 25 },
             { header: "Adresa", key: "address", width: 25 },
             { header: "Naziv mjesta", key: "city", width: 25 },
-            { header: "Točionici", key: "dispensers", width: 75 }
+            { header: "Točionici", key: "dispensers", width: 60 },
+            { header: "Serijski broj", key: "serialNum", width: 60 },
+            { header: "Konzole", key: "console", width: 50 },
+            //{ header: "Datum zadnje sanitacije", width: 25 }
+            { header: "Djelovi", key: "parts", width: 60 },
+            { header: "Komentari", key: "comment", width: 60 }
         ];
 
 
@@ -133,7 +157,24 @@ router.get("/exportFacilityReportXlsx", (req, res) => {
                 dispensers: facility.dispensers
                     .filter((dis) => { return dis.status === "active" })
                     .map((dis, index) => `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}`)
-                    .join(",  ")
+                    .join(",  "),
+                serialNum: facility.dispensers
+                    .filter((dis) => { return dis.status === "active" })
+                    .map((dis, index) => `Točionik ${index + 1}: ${dis.serialNum}`)
+                    .join(",  "),
+                console: facility.parts
+                    .filter(part => { return part.productName.includes("Konzola"); })
+                    .map(part => `${part.productName}:  ${part.quantity}${part.unit}`)
+                    .join(",  "),
+                // dols: facility.dispensers
+                //     .filter((dis) => { return dis.status === "active" })
+                //     .map((dis, index) => `Točionik ${index + 1}:  ${dis.invNumber} - ${dis.status} - ${dis.model}`)
+                //     .join(",  "),
+                parts: facility.parts
+                    .filter(part => { return !part.productName.includes("Konzola"); })
+                    .map(part => `${part.productName}:  ${part.quantity}${part.unit}`)
+                    .join(",  "),
+                comment: facility.comment.map(comment => `- ${comment}`).join(",  ")
             });
         });
 
@@ -152,9 +193,9 @@ router.get("/exportFacilityReportXlsx", (req, res) => {
             const mail_configs = {
                 from: "tipicnikola@gmail.com",
                 to: "tipic.n@outlook.com",
-                subject: "Izvoz Objekata, izviješće pivovara",
+                subject: "Izvoz Objekata, dnevno izviješće",
                 attachments: [{
-                    filename: "Izvoz_Objekata_izviješće_pivovara.xlsx",
+                    filename: "Izvoz_Objekata_dnevno_izviješće.xlsx",
                     content: buffer
                 }]
             };
