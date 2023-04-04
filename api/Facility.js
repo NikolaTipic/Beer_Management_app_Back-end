@@ -351,7 +351,7 @@ router.post("/addDateOfLastSanitation", (req, res) => {
     invNumber = invNumber.trim();
     invNumber = invNumber.toUpperCase();
 
-    Facility.updateOne({ "dispensers.invNumber": invNumber }, { $set: { "dispensers.$.dols": dateOfLastSanitation } }, (err, data) => {
+    Facility.updateOne({ "dispensers.invNumber": invNumber }, { $set: { "dispensers.$.dols": new Date(dateOfLastSanitation) } }, (err, data) => {
         if (err) {
             console.log(err);
             res.json({
@@ -366,7 +366,7 @@ router.post("/addDateOfLastSanitation", (req, res) => {
             if (data.modifiedCount === 1) {
                 res.json({
                     status: "SUCCESS",
-                    message: `Sanitacija je potvrđena, dana: ${new Date(dateOfLastSanitation).toDateString()} - ${invNumber}`
+                    message: `Sanitacija je potvrđena, dana: ${new Date(dateOfLastSanitation).toLocaleString()} - ${invNumber}`
                 });
 
                 Facility.updateOne({ "dispensers.invNumber": invNumber }, {$set: {"dispensers.$.status" : "active"}}, (err, data) => {
