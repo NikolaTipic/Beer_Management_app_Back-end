@@ -366,7 +366,7 @@ router.post("/addDateOfLastSanitation", (req, res) => {
             if (data.modifiedCount === 1) {
                 res.json({
                     status: "SUCCESS",
-                    message: `Sanitacija je potvrđena, dana: ${new Date(dateOfLastSanitation).toLocaleString()} - ${invNumber}`
+                    message: `Sanitacija je potvrđena, dana: ${dateOfLastSanitation} - ${invNumber}`
                 });
 
                 Facility.updateOne({ "dispensers.invNumber": invNumber }, {$set: {"dispensers.$.status" : "active"}}, (err, data) => {
