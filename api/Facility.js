@@ -392,7 +392,7 @@ router.post("/addDateOfLastSanitation", (req, res) => {
 
         res.json({
             status: "FAILED",
-            message: `Točionik pod inventurnim brojem: ${invNumber}, ne pripada ni jedom objektu!`
+            message: `Točionik pod inventurnim brojem: ${invNumber}, ne pripada ni jednom objektu!`
         });
     });
 });
