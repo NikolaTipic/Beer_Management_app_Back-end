@@ -4,7 +4,15 @@ const Schema = mongoose.Schema;
 const FacilitySchema = new Schema({
     id: Number,
     name: String,
-    dispensers: [{}],
+    dispensers: [{
+        serialNum: String,
+        invNumber: String,
+        model: String,
+        status: String,
+        comment: String,
+        location: String,
+        dts: Number
+    }],
     parts: [{
         productName: String,
         productCode: String,

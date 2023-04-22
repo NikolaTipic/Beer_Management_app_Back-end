@@ -6,7 +6,18 @@ const cors = require("cors");
 const excelJs = require("exceljs");
 //express
 const app = require("express")();
+//model
+const Facility = require("./models/Facility");
 
+const dtsMinusOne = () => {
+    Facility.updateMany({ "dispensers.status" : "active" }, {$inc: {"dispensers.$[elem].dts": -1}}, {arrayFilters: [{ "elem.status": "active" }]}, (error, data) => {
+        if(error) {
+            console.log(error);
+        } else {
+            console.log(data);
+        }
+    });
+};
 
 const port = process.env.PORT || 3000;
 
@@ -29,6 +40,9 @@ app.use("/part", PartRouter);
 app.use("/facility", FacilityRouter);
 app.use("/excel", ExcelRouter);
 app.use("/comment", CommentRouter);
+
+
+setInterval(dtsMinusOne, 1000 * 60 * 60 * 24);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
